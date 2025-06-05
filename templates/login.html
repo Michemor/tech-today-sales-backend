@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="login"></div>
+<h1> Login To proceed </h1>
+<form method="post">
+    <p>
+        {{ form.username.label }} <br>
+        {{ form.username(size=30)}}
+    </p>
+    <p>
+        {{ form.password.label }} <br>
+        {{ form.password(size=30)}}
+    </p>
+    
+     <p>
+        {{ form.login() }}
+    </p>
+</form>
+</div>
+{% endblock content %}
