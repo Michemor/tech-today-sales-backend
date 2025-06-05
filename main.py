@@ -1,66 +1,107 @@
-import os
-from flask import Flask, flash, render_template, request, redirect, url_for
-from dotenv import load_dotenv
-from flask_hashing import Hashing
+from flask import Flask, flash, redirect, request, render_template, url_for
+from database import db
 from models.user import User
-from views.forms import LoginForm, AddUserForm
-from flask_sqlalchemy import SQLAlchemy
+import click
+from flask_migrate import Migrate
+from config import Config
 
-load_dotenv()
-app = Flask(__name__)
-db = SQLAlchemy()
-hashing = Hashing()
+
+"""
+This is the main file and contains endpoints for creating the app
+and fetching data from the database
+"""
+
+migrate = Migrate()
 
 def create_app():
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
-    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
-    db.init_app(app)
-    hashing.init_app(app)
+    """
+    Instantiates the flask app
+    initializes the database with the app
+    """
+    app = Flask(__name__)
+    app.config.from_object(Config)
+    app.config.from_mapping(
 
+    )
+    db.init_app(app)
+    migrate.init_app(app, db, command='migrate')
+    
     with app.app_context():
         db.create_all()
+        click.echo("Database tables created")
     
+    @app.route('/admin')
+    def home():
+        """ Root route
+        """
+
+        added_users = db.session.execute(db.select(User).order_by(User.created_at)).scalars().all()
+
+        return render_template('base.html', users=added_users)
+    
+    @app.route('/users', methods = ['GET', 'POST'])
+    def addUser():
+        """
+        adds new users to the system
+        an admin function
+        """
+
+        if request.method == 'POST':
+            username = request.form.get('username')
+            email = request.form.get('email')
+            password = request.form.get('password')
+
+            # check whether user has already been created
+            existing_user = User.query.filter_by(user_name = username).first()
+
+            if existing_user:
+                return render_template('admin.html', error='User already exists')
+        
+            # create new user
+            new_user = User(user_name = username, user_email = email)
+            new_user.set_password(password)
+
+            try:
+                db.session.add(new_user)
+                db.session.commit()
+                flash("Added a new user successfully")
+                return render_template("admin.html")
+            except Exception as e:
+                return render_template("admin.html", error=f"Error in adding user {e}")
+
+     
+        return render_template('admin.html')
+    
+    @app.route('/', methods=['POST', 'GET'])
+    def userLogin():
+        """
+        Endpoint for user to login in to the system
+        """
+
+        if request.method == "POST":
+            name = request.form.get('username')
+            password = request.form.get('password')
+
+            existing_user = db.session.execute(db.select(User).filter_by(user_name=name)).scalar_one_or_none()
+
+            if existing_user and existing_user.check_password(password):
+                flash('You have logged in successfully', 'success')
+                return redirect(url_for('client'))
+            else:
+                flash('Invalid username or password', 'danger')
+        
+        return render_template('login.html')
+    
+
+    @app.route('/client')
+    def client():
+
+        return 'You can enter the client details'
+
     return app
 
 
-@app.route("/")
-def index():
-    return redirect(url_for("admin"))
-
-@app.route("/admin", methods=["POST", "GET"])
-def admin():
-    form = AddUserForm()
-    if request.method == "POST" and form.validate_on_submit():
-        try:
-            hashed_password = hashing.hash_value(form.password.data, salt="welcome")
-            username=form.username.data,
-            email=form.email.data,
-            password=hashed_password,
-
-            user = User( username, email, password)
-        
-            db.session.add(user)
-            db.session.commit()
             
-            flash(f"User {user.username} added successfully", "success")
-            return redirect(url_for("list_users"))
-        except Exception as e:
-            db.session.rollback()
-            flash(f"Error occurred while adding user: {e}")
-
-    return render_template("admin.html", form=form)
-    
-    
-@app.route("/users")
-def list_users():
-    users = db.session.execute(db.select(User)).scalars().all()
-    if not users:
-         flash("No users found.", "info")
-   
-    return render_template("user.html", users=users)
-
-    
-
 
 if __name__ == "__main__":
     create_app().run()

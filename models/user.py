@@ -28,7 +28,7 @@ class User(db.Model):
         """
         return f"<User: {self.user_id} {self.user_name}>"
     
-    def hash_password(self, password):
+    def set_password(self, password):
         """
         Hashes the password of the user before storage
         """
