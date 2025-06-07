@@ -20,9 +20,6 @@ def create_app():
     """
     app = Flask(__name__)
     app.config.from_object(Config)
-    app.config.from_mapping(
-
-    )
     db.init_app(app)
     migrate.init_app(app, db, command='migrate')
     
@@ -93,10 +90,14 @@ def create_app():
         return render_template('login.html')
     
 
-    @app.route('/client')
+    @app.route('/client', methods=['POST', 'GET'])
     def client():
 
-        return 'You can enter the client details'
+        if request.method == 'POST':
+            pass
+        
+
+        return render_template('client.html')
 
     return app
 
