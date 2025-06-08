@@ -1,6 +1,6 @@
 from database import db
 from datetime import datetime
-from client import Client
+from models.clientModel import Client
 
 class Internet(db.Model):
     """
