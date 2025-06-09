@@ -6,7 +6,7 @@ from models.userModel import User
 admin_bp = Blueprint('admin_bp',  __name__, template_folder='templates')
 
 
-@admin_bp.route('/adminLogin', methods=['POST', 'GET'])
+@admin_bp.route('/admin', methods=['POST', 'GET'])
 def userLogin():
     """
     Endpoint for user to login in to the system
@@ -14,8 +14,10 @@ def userLogin():
     if request.method == "POST":
         name = request.form.get('username')
         password = request.form.get('password')
-        existing_user = db.session.execute(db.select(Admin).filter_by(admin_name=name)).scalar_one_or_none()
-        if existing_user and existing_user.check_password(password):
+
+        existing_admin = db.session.execute(db.select(Admin).filter_by(admin_name=name)).scalar_one_or_none()
+
+        if existing_admin and existing_admin.check_password(password):
             flash('You have logged in successfully', 'success')
             return render_template('listuser.html')
         else:
@@ -60,21 +62,21 @@ def addUser():
  
     return render_template('addUser.html')
 
-@admin_bp.route('/admin')
-def create_admin():
-
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-
-    created_admin = Admin(admin_name = username, admin_password = password)
-
-    try:
-        db.session.add(created_admin)
-        db.session.commit()
-        return redirect(url_for('userLogin'))
-    except Exception as e:
-        flash(f'Error in creating database {e}')
-        return render_template('create_admin.html')
-
-    return render_template('create_admin.html')
+# @admin_bp.route('/admin', methods=['GET', 'POST'])
+# def create_admin():
+# 
+#     if request.method == 'POST':
+#         username = request.form.get('username')
+#         password = request.form.get('password')
+# 
+#         created_admin = Admin(admin_name = username)
+#         created_admin.set_password(password)
+# 
+#         try:
+#             db.session.add(created_admin)
+#             db.session.commit()
+#             return f'Admin created successfully'
+#         except Exception as e:
+#             return f'Error in creating database {e}'
+#     
+#     return render_template('create_admin.html')
