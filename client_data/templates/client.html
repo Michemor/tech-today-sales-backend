@@ -1,175 +1,293 @@
 {% extends 'base.html' %}
+{% block header %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% endblock header %}
+
 {% block content %}
 
-<div class="flex justify-center mt-12">
-  <form method="post" class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md space-y-6 font-montserrat">
-    <h1 class="text-2xl font-bold text-center text-gray-800 mb-6"> Client Data </h1>
-    <p class="text-2xl font-bold text-center text-gray-800 mb-6"> Enter the details of the client </p>
+<div class="form-container">
+
+  <form method="post" id="client-form">
     {% with messages = get_flashed_messages() %}
+    <div class="form-flash" id="form-messages" style="display: none;">
       {% if messages %}
-        <ul class="mb-4">
+        <ul>
         {% for message in messages %}
-          <li class="text-red-500">{{ message }}</li>
+          <li>{{ message }}</li>
         {% endfor %}
         </ul>
       {% endif %}
     {% endwith %}
-    <div>
-<div class="grid grid-cols-1 divide-y divide-yellow-500">
-
-  <!-----------------Client Information section ------------------->
-     <div>
-    <h2> Client's Information </h2>
-    <label for="client_name"> Client Name </label>
-    <input type="text" name="client_name" id="client_name"> <br>
-
-    <label for="client_contact"> Client Contact </label>
-    <input type="tel" name="client_contact" id="client_contact"> <br>
-
-    <label for="email"> Client Email </label>
-    <input type="email" name="client_email" id="client_email"> <br>
-
-    <label for="job_title"> Job Title </label>
-    <input type="text" name="job_title" id="job_title"> <br>
-
-    <label for="conversation"> Enter any information regarding the deal or inquries of the client </label>
-    <input type="text" name="conversation" id="conversation"> <br>
-  </div>
-
-  <!---------------------Meeting section details ------------->
-
-  <div>
-    <h2> Meeting details </h2>
-    <label for="meeting_date"> Meeting Date </label>
-    <input type="date" name="meeting_date" id="meeting_date"> <br>
-
-    <label for="meeting_location"> Meeting Location </label>
-    <input type="text" name="meeting_location" id="meeting_location"> <br>
-
-    <label for="meeting_remarks"> Meeting Remarks </label>
-    <input type="text" name="meeting_remarks" id="meeting_remarks">
-
-    <label for="meeting_status"> Meeting Status </label>
-    <select name="meeting_status" id="meeting_status">
-      <option value="ongoing"> Ongoing </option>
-      <option value="completed"> Completed </option>
-      <option value="cancelled"> Cancelled </option>
-      <option value="other"> Other </option>
-    </select> <br>
-    <input type="text" name="other_status" id="other_status" placeholder="Please specify the meeting status if selected other">
-
-  </div>
-
-  <!------------------------ General Office Details section ---------------------->
-  <div>
-    <h2> General Office Details </h2>
-    <label for="office_name"> Office Name: </label>
-    <input type="text" name="office_name" id="office_name">
-
-    <label for="staff_number"> Staff Number: </label>
-    <input type="text" name="staff_number" id="staff_number" > <br>
-
-
-    <label for="industry"> Industry Category </label>
-    <select name="industry" id="industry">
-        <option value="ngo"> NGO </option>
-        <option value="manufacturing"> Manufacturing Industry </option>
-        <option value="bank"> Bank </option>
-        <option value="hospital"> Hospital </option>
-        <option value="Other"> Other </option>
-    </select> <br>
-    <input type="text" id="other_industry" name="other_industry" placeholder="Please specify the other category selected"> <br>
-  </div>
-  <!--------------End of section ------------------->
-
-  <!--------------------------Internet Status Information ------------------------------------------>
-  <div>
-    <h3> Internet Status Information </h3>
-    <p> Do they have an existing internet connection? </p>
-    <input type="radio" name="net_connected" id="net_yes">
-    <label for="yes"> Yes </label>
-
-    <input type="radio" name="net-connected" id="net_no">
-    <label for="no"> No </label> <br>
-
-    <!----- Implement using javascript this section ------>
-    <div id="net_section" style="display:none; margin-top: 20px">
-    {% if isp_connected %}
-    <p> Select the internet provider the client uses: </p>
-    <label for="provider"> Internet Provider: </label> <br>
-    <select name="provider" id="provider"> 
-        <option value="liquid"> Liquid </option>
-        <option value="safaricom_fibre"> Safaricom Fibre </option>
-        <option value="zuku"> Zuku </option>
-        <option value="ntt_is"> NTT/IS (Internet Solutions)</option>
-        <option value="telkom"> Telkom </option>
-        <option value="faiba"> Faiba </option>
-        <option value="Other"> Other </option>
-    </select> <br>
-    <input type="text" name="other-provider" id="other-provider"> <br>
-
-    <p> Select the amount the price/rate per month the client pays: </p>
-    <label for="price"> Price/Rate per month</label>
-    <select name="price" id="price">
-        <option value="p1"> Below 5000 </option>
-        <option value="p2"> 5000 - 10,000 </option>
-        <option value="p3"> 5000 - 10,000 </option>
-        <option value="p2"> 10000 - 20,000 </option>
-    </select> <br>
-
-    <input type="number" name="other_price" id="other_price"> <br>
-
-    <p> Is the internet connection type dedicated or shared? </p>
-    <input type="text" name="net_connection_type" id="dedicated">
-    <label for="dedicated"> Dedicated </label>
-
-    <input type="text" name="net_connection_type" id="shared">
-    <label for="shared"> Shared </label> <br>
-
-    <label for="product"> What type of prroduct does the client receive from the internet provider? </label>
-    <select>
-        <option value="telephony"> PBX/Telephony </option>
-        <option value="internet"> Internet </option>
-        <option value="hosting"> Domain & Hosting </option>
-        <option value="other"> Other </option>
-    </select> <br>
-    <input type="text" name="other_product" id="other_product"> <br>
-
-    <label for="deal_status"> Deal status: </label>
-    <input type="radio" name="deal_status" id="closed">
-    <label for="radio"> Closed </label> <br>
-
-    <input type="radio" name="deal_status" id="follow-up">
-    <label for="radio"> Follow Up </label> <br>
-
-    <input type="radio" name="deal_status" id="negotiating">
-    <label for="radio"> Negotiating </label> <br>
-
-    <input type="radio" name="deal_status" id="complete">
-    <label for="radio"> Complete </label> <br>
-
-    <input type="radio" name="deal_status" id="dropped">
-    <label for="radio"> Dropped </label> <br>
-
-    <input type="radio" name="other_deal_status" id="other-deal-status">
-    <label for="radio"> Other </label> <br>
-
-    <label for="deal-input"> Deal status </label>
-    <input type="text" name="deal-input" id="deal-input" placeholder="Please specify the deal status">
-    <br>
     </div>
-    <!------------------ End of Section  --------------------->
-    {% else %}
-        <button> Submit </button>
-  </div>
-  {% endif %}
+
+
+      <!-- Client Information section -->
+    <div>
+
+      <div class="form-section" id="client-section">
+        <div class="section-title">
+        <h2>Client's Information</h2>
+        <button type="button" class="section-toggle">+</button>
+        </div>
+        <div class="form-content">
+        <div class="form-group">
+        <label for="client_name">Client Name</label>
+        <input type="text" name="client_name" id="client_name" required> <br>
+        </div>
+
+        <div class="form-group"></div>
+        <label for="client_email">Client Email</label>
+        <input type="text" name="client_email" id="client_email" required> <br>
+        </div>
+        
+        <div class="form-group">
+        <label for="client_contact">Client Contact</label>
+        <input type="tel" name="client_contact" id="client_contact" required> <br>
+        </div>
+
+        <div class="form-group">
+        <label for="job_title">Job Title</label>
+        <input type="text" name="job_title" id="job_title" required> <br>
+        </div>
+
+        <div class="form-group">
+        <label for="conversation">Enter any information regarding the deal or inquiries of the client</label>
+        <textarea name="conversation" id="conversation"  rows="5">
+          </textarea> <br>
+        </div>
+      </div>
+      </div>
+      <!-- End of Client Information section -->
+
+
+      <!-- Meeting section details -->
+      <div class="form-section" id="meeting-section">
+        <div class="section-title">
+        <h2>Meeting details</h2>
+        <button type="button" class="section-toggle">+</button>
+        </div>
+
+        <div class="form-content">
+
+          <div class="form-group">
+        <label for="meeting_date">Meeting Date</label>
+        <input type="date" name="meeting_date" id="meeting_date" required> <br>
+        </div>
+
+        <div class="form-group">
+        <label for="meeting_location">Meeting Location</label>
+        <input type="text" name="meeting_location" id="meeting_location" required> <br>
+        </div>
+
+        <div class="form-group">
+        <label for="meeting_remarks">Meeting Remarks</label>
+        <input type="text" name="meeting_remarks" id="meeting_remarks">
+        </div>
+
+    <div class="form-group">
+        <label for="meeting_status">Meeting Status</label>
+        <select name="meeting_status" id="meeting_status" required>
+          <option value="ongoing">Ongoing</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="other">Other</option>
+        </select> <br>
+        </div>
+
+        <div class="other-field" id="other-status-field">
+        <input type="text" name="other_status" id="other_status" placeholder="Please specify the meeting status if selected other">
+        </div>
+      </div>
+      </div>
+
+      <!-- General Office Details section -->
+      <div class="form-section" id="office-section">
+        <div class="section-title">
+        <h2>General Office Details</h2>
+        <button type="button" class="section-toggle">+</button>
+        </div>
+        <div class="form-content">
+
+          <div class="form-group">
+        <label for="office_name">Office Name:</label>
+        <input type="text" name="office_name" id="office_name" required> <br>
+        </div>
+
+        <div class="form-group">
+        <label for="staff_number">Staff Number:</label>
+        <input type="text" name="staff_number" id="staff_number" required> <br>
+        </div>
+
+        <div class="form-group">
+        <label for="industry">Industry Category</label>
+        <select name="industry" id="industry" required>
+            <option value="ngo">NGO</option>
+            <option value="manufacturing">Manufacturing Industry</option>
+            <option value="bank">Bank</option>
+            <option value="hospital">Hospital</option>
+            <option value="Other">Other</option>
+        </select> <br>
+        </div>
+        <div class="other-field" id="other-industry-field">
+          <label for="other_industry">Specify Industry</label>
+        <input type="text" id="other_industry" name="other_industry" placeholder="Please specify the other category selected"> <br>
+        </div>
+      </div>
+      </div>
+
+      <!-- Internet Status Information -->
+      <div class="form-section" id="internet-section">
+        <div class="section-title">
+        <h2>Internet Status Information</h2>
+        <button type="button" class="setion-toggle">+</button>
+        </div>
+        <div class="form-content">
+
+        <div class="form-group">
+        <p>Do they have an existing internet connection?</p>
+        <div class="radio-group">
+          <div class="radio-option">
+        <input type="radio" name="net_connected" id="net_yes" required value="yes">
+        <label for="net_yes">Yes</label>
+        </div>
+
+        <div class="radio-option">
+        <input type="radio" name="net_connected" id="net_no" value="no" checked>
+        <label for="net_no">No</label> <br>
+        </div>
+        </div>
+        </div>
+
+        <div id="net_section" class="conditional-section">
+        <div class="form-group">
+          <div class="radio-group">
+            <p>Select the internet provider the client uses:</p>
+
+            <div class="radio-option">
+              <input type="radio" id="liquid" name="provider" value="liquid"/>
+              <label for="liquid">Liquid</label>
+            </div>
+
+            <div class="radio-option">
+              <input type="radio" id="faiba" name="provider" value="faiba" />
+              <label for="faiba">Faiba</label>
+            </div>
+
+            <div class="radio-option">
+              <input type="radio" id="fibre" name="provider" value="fibre" />
+              <label for="fibre">Safaricom Fibre</label>
+            </div>
+
+            <div class="radio-option">
+              <input type="radio" id="zuku" name="provider" value="zuku" />
+              <label for="zuku">Zuku</label>
+            </div>
+
+            <div class="radio-option">
+              <input type="radio" id="ntt_is" name="provider" value="ntt_is" />
+              <label for="ntt_is">NTT/IS (Internet Solutions)</label>
+            </div>
+
+            <div class="radio-option">
+              <input type="radio" id="telkom" name="provider" value="telkom" />
+              <label for="telkom">Telkom</label>
+            </div>
+
+            <div class="radio-option">
+              <input type="radio" id="other-provider" name="provider" value="other" />
+              <label for="other">Other</label>
+            </div>
+
+          </div>
+          
+
+          <div class="other-field" id="other-provider-field">
+          <input type="text" name="other-provider" id="other-provider"> <br>
+          </div>
+
+          </div>
+
+          <div class="form-group">
+          <p>Select the amount the price/rate per month the client pays:</p>
+          <label for="price">Price/Rate per month</label>
+          <p class="help-text">Enter the price as a range i.e 5000-10000 if range or 5000 if one single value</p>
+          <input type="number" name="price" id="price"> <br>
+          </div>
+
+          <div class="form-group">
+          <p> Internet Connection Type: </p>
+          <div class="radio-group">
+            <div class="radio-option">
+          <input type="radio" name="net_connection_type" id="dedicated" value="dedicated">
+          <label for="dedicated">Dedicated</label>
+          </div>
+          <div class="radio-option">
+          <input type="radio" name="net_connection_type" id="shared" value="shared">
+          <label for="shared">Shared</label> <br>
+          </div>
+          </div>
+
+          <div class="form-group">
+          <P for="product"> Internet Product Tyoe </p>
+          <select name="product" id="product">
+              <option value="telephony">PBX/Telephony</option>
+              <option value="internet">Internet</option>
+              <option value="hosting">Domain & Hosting</option>
+              <option value="other">Other</option>
+          </select> <br>
+          </div>
+          <div class="other-field">
+            <label for="other_product"> Specify the internet Product </label>
+          <input type="text" name="other_product" id="other_product"> <br>
+          </div>
+          <div class="form-group">
+            <div class="radio-group">
+          <label for="deal_status">Deal status:</label>
+          <div class="radio-option">
+          <input type="radio" name="deal_status" id="closed" value="closed">
+          <label for="closed">Closed</label> <br>
+          </div>
+
+          <div class="radio-option">
+          <input type="radio" name="deal_status" id="follow-up" value="follow-up">
+          <label for="follow-up">Follow Up</label> <br>
+          </div>
+          <div class="radio-option">
+          <input type="radio" name="deal_status" id="negotiating" value="negotiating">
+          <label for="negotiating">Negotiating</label> <br>
+          </div>
+
+          <div class="radio-option">
+          <input type="radio" name="deal_status" id="complete" value="complete">
+          <label for="complete">Complete</label> <br>
+          </div>
+
+          <div class="radio-option">
+          <input type="radio" name="deal_status" id="dropped" value="dropped">
+          <label for="dropped">Dropped</label> <br>
+          </div>
+          <div class="radio-option">
+          <input type="radio" name="deal_status" id="other-deal-status" value="other">
+          <label for="other-deal-status">Other</label> <br>
+          </div>
+          <br>
+          </div>
+          <div class="other-field">
+            <label for="other-status"> Specify the Status </label>
+            <input type="text" name="other-status" id="other-status">
+          </div>
+
+        </div>
+        </div>
+        </div>
+        <div class="form-navigation">
+          <button type="submit" id="submit-btn">Submit</button>
+      </div>
+  </form>
 </div>
-</div>
-</form>
+
 {% endblock %}
 
 {% block scripts %}
-
-<scripts src="{{ url_for('static', filename='js/index.js') }}"></scripts>
-
-{% endlock %}
+<script src="{{ url_for('client_bp.static', filename='js/index.js') }}"></script>
+{% endblock %}

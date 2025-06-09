@@ -3,7 +3,8 @@ from models.adminModel import Admin
 from database import db
 from models.userModel import User
 
-admin_bp = Blueprint('admin_bp',  __name__, template_folder='templates')
+admin_bp = Blueprint('admin_bp',  __name__, template_folder='templates',
+                     static_folder='static')
 
 
 @admin_bp.route('/admin', methods=['POST', 'GET'])
@@ -26,7 +27,7 @@ def userLogin():
     return render_template('login.html')
 
 @admin_bp.route('/users')
-def home():
+def users():
     """ Root route
     """
     added_users = db.session.execute(db.select(User).order_by(User.created_at)).scalars().all()
@@ -55,7 +56,7 @@ def addUser():
             db.session.add(new_user)
             db.session.commit()
             flash("Added a new user successfully")
-            return redirect(url_for('users'))
+            return redirect(url_for('admin_bp.users'))
         except Exception as e:
             flash(f'Failure to add a user. Error: {e}')
             return render_template('listuser.html')

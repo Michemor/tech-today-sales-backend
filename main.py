@@ -39,7 +39,7 @@ def create_app():
         click.echo("Database tables created")
     
     return app
-       
+
 
 if __name__ == "__main__":
     create_app().run()
