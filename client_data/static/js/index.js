@@ -19,7 +19,8 @@ $(document).ready(function () {
     $form.on('submit', handleSubmit);
 
     $('#meeting_status').on('change', function () {
-      $('#other-status-field').toggle($(this).val() === 'other');
+
+      $('#other-status').toggle($(this).val() === 'other');
     });
 
     $('#industry').on('change', function () {

@@ -9,7 +9,7 @@
 
   <form method="post" id="client-form">
     {% with messages = get_flashed_messages() %}
-    <div class="form-flash" id="form-messages" style="display: none;">
+    <div class="form-flash" id="form-messages" style="display: block;">
       {% if messages %}
         <ul>
         {% for message in messages %}
@@ -23,7 +23,6 @@
 
       <!-- Client Information section -->
     <div>
-
       <div class="form-section" id="client-section">
         <div class="section-title">
         <h2>Client's Information</h2>
@@ -84,18 +83,18 @@
         <input type="text" name="meeting_remarks" id="meeting_remarks">
         </div>
 
-    <div class="form-group">
-        <label for="meeting_status">Meeting Status</label>
-        <select name="meeting_status" id="meeting_status" required>
-          <option value="ongoing">Ongoing</option>
-          <option value="completed">Completed</option>
-          <option value="cancelled">Cancelled</option>
-          <option value="other">Other</option>
-        </select> <br>
-        </div>
+        <div class="form-group">
+          <label for="meeting_status">Meeting Status</label>
+          <select name="meeting_status" id="meeting_status" required>
+            <option value="Ongoing">Ongoing</option>
+            <option value="Completed">Completed</option>
+            <option value="Cancelled">Cancelled</option>
+            <option value="Other">Other</option>
+          </select> <br>
+          </div>
 
         <div class="other-field" id="other-status-field">
-        <input type="text" name="other_status" id="other_status" placeholder="Please specify the meeting status if selected other">
+        <input type="text" name="other-status" id="other-status" placeholder="Please specify the meeting status if selected other">
         </div>
       </div>
       </div>
@@ -121,10 +120,10 @@
         <div class="form-group">
         <label for="industry">Industry Category</label>
         <select name="industry" id="industry" required>
-            <option value="ngo">NGO</option>
-            <option value="manufacturing">Manufacturing Industry</option>
-            <option value="bank">Bank</option>
-            <option value="hospital">Hospital</option>
+            <option value="NGO">NGO</option>
+            <option value="Manufacturing industry">Manufacturing Industry</option>
+            <option value="Bank">Bank</option>
+            <option value="Hospital">Hospital</option>
             <option value="Other">Other</option>
         </select> <br>
         </div>
@@ -142,12 +141,11 @@
         <button type="button" class="setion-toggle">+</button>
         </div>
         <div class="form-content">
-
         <div class="form-group">
         <p>Do they have an existing internet connection?</p>
         <div class="radio-group">
           <div class="radio-option">
-        <input type="radio" name="net_connected" id="net_yes" required value="yes">
+        <input type="radio" name="net_connected" id="net_yes" required value="Yes">
         <label for="net_yes">Yes</label>
         </div>
 
@@ -164,37 +162,37 @@
             <p>Select the internet provider the client uses:</p>
 
             <div class="radio-option">
-              <input type="radio" id="liquid" name="provider" value="liquid"/>
+              <input type="radio" id="liquid" name="provider" value="Liquid"/>
               <label for="liquid">Liquid</label>
             </div>
 
             <div class="radio-option">
               <input type="radio" id="faiba" name="provider" value="faiba" />
-              <label for="faiba">Faiba</label>
+              <label for="Faiba">Faiba</label>
             </div>
 
             <div class="radio-option">
-              <input type="radio" id="fibre" name="provider" value="fibre" />
+              <input type="radio" id="fibre" name="provider" value="Safaricom Fibre" />
               <label for="fibre">Safaricom Fibre</label>
             </div>
 
             <div class="radio-option">
-              <input type="radio" id="zuku" name="provider" value="zuku" />
+              <input type="radio" id="zuku" name="provider" value="Zuku" />
               <label for="zuku">Zuku</label>
             </div>
 
             <div class="radio-option">
-              <input type="radio" id="ntt_is" name="provider" value="ntt_is" />
+              <input type="radio" id="ntt_is" name="provider" value="Ntt/IS" />
               <label for="ntt_is">NTT/IS (Internet Solutions)</label>
             </div>
 
             <div class="radio-option">
-              <input type="radio" id="telkom" name="provider" value="telkom" />
+              <input type="radio" id="telkom" name="provider" value="Telkom" />
               <label for="telkom">Telkom</label>
             </div>
 
             <div class="radio-option">
-              <input type="radio" id="other-provider" name="provider" value="other" />
+              <input type="radio" id="other-provider" name="provider" value="Other" />
               <label for="other">Other</label>
             </div>
 
@@ -202,6 +200,7 @@
           
 
           <div class="other-field" id="other-provider-field">
+            <label for="other-provider"> Specify the provider </label>
           <input type="text" name="other-provider" id="other-provider"> <br>
           </div>
 
@@ -218,11 +217,11 @@
           <p> Internet Connection Type: </p>
           <div class="radio-group">
             <div class="radio-option">
-          <input type="radio" name="net_connection_type" id="dedicated" value="dedicated">
+          <input type="radio" name="net_connection_type" id="dedicated" value="Dedicated">
           <label for="dedicated">Dedicated</label>
           </div>
           <div class="radio-option">
-          <input type="radio" name="net_connection_type" id="shared" value="shared">
+          <input type="radio" name="net_connection_type" id="shared" value="Shared">
           <label for="shared">Shared</label> <br>
           </div>
           </div>
@@ -283,6 +282,8 @@
         <div class="form-navigation">
           <button type="submit" id="submit-btn">Submit</button>
       </div>
+        </div>
+    </div>
   </form>
 </div>
 
