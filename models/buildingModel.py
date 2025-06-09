@@ -9,11 +9,12 @@ class Building(db.Model):
 
     building_id = db.Column(db.Integer, primary_key=True, nullable=False)
     building_name = db.Column(db.String, nullable=False)
-    is_fibre_setup = db.Column(db.Boolean, nullable=False)
+    is_fibre_setup = db.Column(db.String, nullable=False)
     ease_of_access = db.Column(db.Integer, nullable=False)
     access_information = db.Column(db.String, nullable=False)
+    number_offices = db.Column(db.Integer, nullable=False)
 
-    offices = db.relationship('BuildingOffice', backref='building')
+    offices = db.relationship('BuildingOffice', backref='located')
 
     def __repr__(self):
 

@@ -10,10 +10,10 @@ class BuildingOffice(db.Model):
     office_id = db.Column(db.Integer, primary_key=True, nullable=False)
     office_name = db.Column(db.String, nullable=False)
     office_floor = db.Column(db.Integer, nullable=False)
-    number_offices = db.Column(db.Integer, nullable=False)
+    more_data_on_office = db.Column(db.Text, nullable=False)
 
     building_id = db.Column(db.Integer, db.ForeignKey('building.building_id'), nullable=False)
 
     def __repr__(self):
         
-        return f'Office {self.office_name} in building {self.building.building_name}'
+        return f'Office {self.office_name}'

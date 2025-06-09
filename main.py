@@ -8,10 +8,13 @@ from models.internetModel import Internet
 from models.userModel import User
 from models.clientOfficeModel import ClientOffice
 from models.meetingModel import Meeting
+from models.office import BuildingOffice
+from models.buildingModel import Building
 
 # importing blueprints to be registered
 from client_data.client_info import client_bp
 from admin.admin import admin_bp
+from sales_location.sales_location import location_bp
 
 
 
@@ -33,6 +36,7 @@ def create_app():
     migrate.init_app(app, db)
     app.register_blueprint(admin_bp)
     app.register_blueprint(client_bp)
+    app.register_blueprint(location_bp)
 
     with app.app_context():
         db.create_all()
