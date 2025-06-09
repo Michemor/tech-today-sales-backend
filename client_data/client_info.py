@@ -5,7 +5,7 @@ from models.adminModel import Admin
 from database import db
 from models.internetModel import Internet
 from models.meetingModel import Meeting
-from models.officeModel import ClientOffice
+from models.clientOfficeModel import ClientOffice
 from sqlalchemy.exc import IntegrityError, DatabaseError, DataError, SQLAlchemyError
 
 """

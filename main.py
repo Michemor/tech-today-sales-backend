@@ -6,7 +6,7 @@ from config import Config
 from models.clientModel import Client
 from models.internetModel import Internet
 from models.userModel import User
-from models.officeModel import ClientOffice
+from models.clientOfficeModel import ClientOffice
 from models.meetingModel import Meeting
 
 # importing blueprints to be registered
