@@ -1,8 +1,27 @@
 from flask import Blueprint, request, flash, url_for, render_template, redirect
+from models.adminModel import Admin
 from database import db
 from models.userModel import User
 
 admin_bp = Blueprint('admin_bp',  __name__, template_folder='templates')
+
+
+@admin_bp.route('/adminLogin', methods=['POST', 'GET'])
+def userLogin():
+    """
+    Endpoint for user to login in to the system
+    """
+    if request.method == "POST":
+        name = request.form.get('username')
+        password = request.form.get('password')
+        existing_user = db.session.execute(db.select(Admin).filter_by(admin_name=name)).scalar_one_or_none()
+        if existing_user and existing_user.check_password(password):
+            flash('You have logged in successfully', 'success')
+            return render_template('listuser.html')
+        else:
+            flash('Invalid username or password', 'danger')
+    
+    return render_template('login.html')
 
 @admin_bp.route('/users')
 def home():
@@ -36,24 +55,26 @@ def addUser():
             flash("Added a new user successfully")
             return redirect(url_for('users'))
         except Exception as e:
-            return redirect(url_for('users', endpoint=f'Error: {e}'))
+            flash(f'Failure to add a user. Error: {e}')
+            return render_template('listuser.html')
  
     return render_template('addUser.html')
 
+@admin_bp.route('/admin')
+def create_admin():
 
-@admin_bp.route('/', methods=['POST', 'GET'])
-def userLogin():
-    """
-    Endpoint for user to login in to the system
-    """
-    if request.method == "POST":
-        name = request.form.get('username')
+    if request.method == 'POST':
+        username = request.form.get('username')
         password = request.form.get('password')
-        existing_user = db.session.execute(db.select(User).filter_by(user_name=name)).scalar_one_or_none()
-        if existing_user and existing_user.check_password(password):
-            flash('You have logged in successfully', 'success')
-            return redirect(url_for('client'))
-        else:
-            flash('Invalid username or password', 'danger')
-    
-    return render_template('login.html')
+
+    created_admin = Admin(admin_name = username, admin_password = password)
+
+    try:
+        db.session.add(created_admin)
+        db.session.commit()
+        return redirect(url_for('userLogin'))
+    except Exception as e:
+        flash(f'Error in creating database {e}')
+        return render_template('create_admin.html')
+
+    return render_template('create_admin.html')

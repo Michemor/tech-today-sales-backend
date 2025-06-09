@@ -3,6 +3,11 @@ from database import db
 import click
 from flask_migrate import Migrate
 from config import Config
+from models.clientModel import Client
+from models.internetModel import Internet
+from models.userModel import User
+from models.officeModel import Office
+from models.meetingModel import Meeting
 
 # importing blueprints to be registered
 from client_data.client_info import client_bp
@@ -26,10 +31,9 @@ def create_app():
     app.config.from_object(Config)
     db.init_app(app)
     migrate.init_app(app, db, command='migrate')
-    app.register_blueprint(admin_bp, url_prefix='/admin')
-    app.register_blueprint(client_bp, url_prefix='/client')
+    app.register_blueprint(admin_bp)
+    app.register_blueprint(client_bp)
 
-    
     with app.app_context():
         db.create_all()
         click.echo("Database tables created")

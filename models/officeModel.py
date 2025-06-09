@@ -2,6 +2,9 @@ from database import db
 
 
 class Office(db.Model):
+
+    __tablename__ = 'office'
+    
     office_id = db.Column(db.Integer, primary_key=True)
     office_name = db.Column(db.String, nullable=False)
     staff_number = db.Column(db.Integer, nullable=False)

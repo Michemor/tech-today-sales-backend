@@ -1,6 +1,7 @@
 from database import db
 from datetime import datetime
 
+
 class Client(db.Model):
     """
     defines all information related to the client
@@ -21,12 +22,13 @@ class Client(db.Model):
     client_contact = db.Column(db.String, unique=True, nullable=False)
     client_email = db.Column(db.String, unique=True, nullable=False)
     job_title = db.Column(db.String, unique=True, nullable=False)
-    deal_information = db.Column(db.String(255), unique=True, nullable=False)
-    timestamp = db.Column(db.Datetime, default=datetime.now)
+    deal_information = db.Column(db.Text, unique=True, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.now)
     
 
     meetings = db.relationship('Meeting', backref='attends', uselist=False)
     offices = db.relationship('Office', backref='owns', uselist=False)
+    internet = db.relationship('Internet', backref='hasinternet', uselist=False)
 
     def __repr__(self):
         return f'Client {self.client_name} {self.timestamp}'

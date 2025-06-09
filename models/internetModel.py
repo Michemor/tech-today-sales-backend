@@ -14,14 +14,17 @@ class Internet(db.Model):
     client_id: relationship between office and client
     """
 
+    __tablename__ = 'internet'
+    
+    internet_id = db.Column(db.Integer, primary_key=True)
     is_isp_connected = db.Column(db.Boolean, nullable=False)
-    isp_name = db.Column(db.String)
-    internet_connection_type = db.Column(db.String)
-    service_provided = db.Column(db.String)
-    isp_price = db.Column(db.Numeric)
-    deal_status = db.Column(db.String)
-    client_id = db.Column(db.Integer, db.ForeignKey('client_id'))
-    timestamp = db.Column(db.Datetime, default=datetime.now)
+    isp_name = db.Column(db.String, default=None)
+    internet_connection_type = db.Column(db.String, default=None)
+    service_provided = db.Column(db.String, default=None)
+    isp_price = db.Column(db.Numeric, default=0)
+    deal_status = db.Column(db.String, default=None)
+    client_id = db.Column(db.Integer, db.ForeignKey('client.client_id'))
+    timestamp = db.Column(db.DateTime, default=datetime.now)
 
     def __repr__(self):
         return f'Internet status: \n{self.is_isp_connected} \n{self.timestamp}'
