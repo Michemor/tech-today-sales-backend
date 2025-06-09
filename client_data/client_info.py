@@ -5,7 +5,7 @@ from models.adminModel import Admin
 from database import db
 from models.internetModel import Internet
 from models.meetingModel import Meeting
-from models.officeModel import Office
+from models.officeModel import ClientOffice
 from sqlalchemy.exc import IntegrityError, DatabaseError, DataError, SQLAlchemyError
 
 """
@@ -122,7 +122,7 @@ def salesOffice():
                                 deal_status = deal_status,
                                 hasinternet = new_client)
         
-        new_office = Office(office_name = office_name,
+        new_office = ClientOffice(office_name = office_name,
                             staff_number = staff_number,
                             industry_category = industry_category,
                             owns = new_client)
@@ -160,6 +160,6 @@ def client_data():
     Displays a lists of clients from the database
     """
 
-    clients = db.session.execute(db.select(Client).order_by(Client.created_at)).scalars().all()
-    return render_template('results.html', clients=clients)
+    client_list = db.session.execute(db.select(Client).order_by(Client.created_at)).scalars().all()
+    return render_template('results.html', clients=client_list)
 

@@ -27,7 +27,7 @@ class Client(db.Model):
     
 
     meetings = db.relationship('Meeting', backref='attends', uselist=False)
-    offices = db.relationship('Office', backref='owns', uselist=False)
+    offices = db.relationship('ClientOffice', backref='owns', uselist=False)
     internet = db.relationship('Internet', backref='hasinternet', uselist=False)
 
     def __repr__(self):

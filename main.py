@@ -6,7 +6,7 @@ from config import Config
 from models.clientModel import Client
 from models.internetModel import Internet
 from models.userModel import User
-from models.officeModel import Office
+from models.officeModel import ClientOffice
 from models.meetingModel import Meeting
 
 # importing blueprints to be registered
@@ -30,7 +30,7 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
     db.init_app(app)
-    migrate.init_app(app, db, command='migrate')
+    migrate.init_app(app, db)
     app.register_blueprint(admin_bp)
     app.register_blueprint(client_bp)
 
