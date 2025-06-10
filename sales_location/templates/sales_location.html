@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
-{% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-{% endblock head %}
 {% block title %} Sales Locations {% endblock %}
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" type="text/css" href="{{ url_for('location_bp.static', filename='css/locations.css') }}">
+{% endblock head %}
 
 {% block content %}
 
@@ -27,18 +28,18 @@
     <label for="building-name"> Building Name: </label> <br>
     <input type="text" name="building-name" id="building-name"> <br>
 
-    <p> Does the building have access to Fibre? </p> <br>
+    <p> Does the building have access to Fibre? </p>
     <input type="radio" name="fibre-val" value="Yes" id="fibre-yes">  
-    <label > Yes </label> <br>
+    <label > Yes </label>
 
     <input type="radio" name="fibre-val" value="No" id="fibre-no"> 
-    <label> No </label> <br>
+    <label> No </label>
 
     <input type="radio" name="fibre-val" value="Connect to MyISP Base Station" id="myisp-base"> 
-    <label> Can connect to MyISP Base Statio </label> <br>
+    <label> Can connect to MyISP Base Statio </label> 
 
     
-    <label> Number of offices </label> <br>
+    <label> Number of offices </label>
     <input type="numeric" name="num-offices" id="num-offices"> <br>
     
 </div>

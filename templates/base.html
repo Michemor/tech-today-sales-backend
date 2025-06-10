@@ -4,44 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Technology Today Sales</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        .home {
-            align-items: center; 
-            min-height: 100vh;
-            background-color: #f0f0f0;
-            margin: 0;
-        }
-
-        h1 {
-            color: #CC5500;
-        }
-       
-        .nav {
-            display: flex;
-            justify-content: center; 
-            align-items: center;
-            justify-content: space-evenly;
-            margin-top: 30px;
-        }
-       
-        a {
-            color: #CC5500;
-            margin: 5px;
-            border: none; 
-            font-size: 16px;
-            cursor: pointer; 
-            transition: background-color 0.3s ease; 
-            text-decoration: none;
-        }
-        
-</style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
     <div>
         {% block content %}
         <div class="home">
-        <h1> Welcome to Sales </h1>
+        <h1> Welcome to Sales Department </h1>
+        <h3> Click on the following buttons to perform your desired action </h3>
         <div class="nav">
         <div class="btn">
             <a href="{{ url_for('client_bp.salesOffice') }}">  
@@ -69,5 +42,6 @@
         {% endblock content %}
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 </body>
 </html>

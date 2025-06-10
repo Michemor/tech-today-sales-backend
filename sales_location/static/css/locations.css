@@ -6,8 +6,6 @@
 
 .sales_locations {
     display: flex;
-    justify-items: center;
-    align-items: center;
 }
 
 input {
@@ -19,17 +17,9 @@ input {
 }
 
 input:focus {
-    border-color: cornflowerblue;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    border-color: #ffbba3;
+    box-shadow: #FF7F50;
     outline: none;
-}
-
-
-h1 {
-    color: #CC5500;
-    text-align: center;
-    margin-top: 40px;
-    margin-bottom: 20px;
 }
 
 table {
@@ -40,7 +30,7 @@ table {
 }
 
 th, td {
-    border: 1px solid #CC5500; 
+    border: 1px solid #FF7F50; 
     padding: 12px; 
     text-align: center; 
 }

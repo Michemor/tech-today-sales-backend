@@ -12,8 +12,10 @@ from sqlalchemy.exc import IntegrityError, DatabaseError, DataError, SQLAlchemyE
 This file contains routes for entering client data 
 """
 
-client_bp = Blueprint('client_bp', __name__, template_folder='templates',
-                      static_folder='static')
+client_bp = Blueprint('client_bp', __name__, 
+                      template_folder='templates',
+                      static_folder='static',
+                      static_url_path='/client_data/static')
 
 @client_bp.route('/', methods=['POST', 'GET'])
 def userLogin():

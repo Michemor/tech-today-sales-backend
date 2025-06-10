@@ -11,7 +11,8 @@ File containing blueprint and endpoints for sales locations
 location_bp = Blueprint('location_bp',
                         __name__,
                         template_folder='templates',
-                        static_folder='static')
+                        static_folder='static',
+                        static_url_path='/sales_location/static/css')
 
 @location_bp.route('/locations', methods=['GET', 'POST'])
 def addLocation():
