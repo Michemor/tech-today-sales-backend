@@ -2,6 +2,7 @@
 {% block content %}
 
 <h2>Client List</h2>
+<a href="/templates/base.html">Back</a>
 <div>
 <table>
     <thead>
@@ -20,7 +21,7 @@
             <td>{{ client.client_contact }}</td>
             <td>{{ client.client_email }}</td>
             <td>{{ client.job_title }}</td>
-            <td>{{ client.conversation }}</td>
+            <td>{{ client.deal_information }}</td>
         </tr>
         {% endfor %}
     </tbody>

@@ -28,11 +28,11 @@ def userLogin():
 
         if existing_user and existing_user.check_password(password):
             flash('You have logged in successfully', 'success')
-            return redirect(url_for('client_bp.salesOffice'))
+            return render_template('base.html')
         else:
             flash('Invalid username or password', 'danger')
     
-    return render_template('login.html')
+    return render_template('base.html')
 
 
 @client_bp.route('/sales', methods=['GET', 'POST'])
@@ -160,6 +160,6 @@ def client_data():
     Displays a lists of clients from the database
     """
 
-    client_list = db.session.execute(db.select(Client).order_by(Client.created_at)).scalars().all()
+    client_list = db.session.execute(db.select(Client).order_by(Client.timestamp)).scalars().all()
     return render_template('results.html', clients=client_list)
 

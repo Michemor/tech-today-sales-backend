@@ -1,0 +1,53 @@
+* {
+    height: 100vh;
+    font-family: 'Montserrat';
+    margin: 20px;
+}
+
+.sales_locations {
+    display: flex;
+    justify-items: center;
+    align-items: center;
+}
+
+input {
+    width: 300px;
+    padding: 10px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+input:focus {
+    border-color: cornflowerblue;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    outline: none;
+}
+
+
+h1 {
+    color: #CC5500;
+    text-align: center;
+    margin-top: 40px;
+    margin-bottom: 20px;
+}
+
+table {
+    width: 80%;
+    margin: 20px auto; 
+    border-collapse: collapse; 
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
+}
+
+th, td {
+    border: 1px solid #CC5500; 
+    padding: 12px; 
+    text-align: center; 
+}
+
+thead th {
+    background-color: #FF7F50; 
+    color: white; 
+    font-weight: bold;
+    text-transform: uppercase; 
+}

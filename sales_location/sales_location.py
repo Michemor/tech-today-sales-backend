@@ -63,7 +63,7 @@ def addLocation():
             db.session.add(new_office)
             db.session.commit()
             flash('Building and Office created successfully!')
-            return render_template('sales_location.html')
+            return render_template('/templates/base.html')
 
         except IntegrityError as e:
             db.session.rollback()
@@ -86,3 +86,14 @@ def addLocation():
             return render_template('sales_location.html')
 
     return render_template('sales_location.html')
+
+@location_bp.route('/listsites')
+def listLocations():
+    """
+    List the offices and buildings
+    """
+
+    buildings = db.session.execute(db.select(Building).order_by(Building.building_id)).scalars().all()
+    offices = db.session.execute(db.select(BuildingOffice).order_by(BuildingOffice.office_id)).scalars().all()
+
+    return render_template('lists.html', buildings=buildings, offices=offices)

@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('location_bp.static', filename='css/styles.css') }}">
+{% endblock head %}
+
+{% block content %}
+
+<h1> List of Buldings </h1>
+<a href="/templates/base.html">Back</a>
+<table>
+    <thead>
+        <th> Building id </th>
+        <th> Building Name </th>
+        <th> Fibre set up </th>
+        <th> Ease of access </th>
+        <th> Number of offices </th>
+    </thead>
+    <tbody>
+        {% for building in buildings %}
+        <tr>
+        <td> {{ building.building_id }} </td>
+        <td> {{ building.building_name }} </td>
+        <td> {{ building.is_fibre_setup }} </td>
+        <td> {{ building.ease_of_access }} </td>
+        <td> {{ building.number_offices }} </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h1> Offices </h1>
+
+<table>
+    <thead>
+        <th> Office id </th>
+        <th> Office Name </th>
+        <th> Office Floor </th>
+        <th> More data on office </th>
+    </thead>
+    <tbody>
+        <tr>
+        {% for office in offices %}
+        <td> {{ office.office_id }} </td>
+        <td> {{ office.office_name }} </td>
+        <td> {{ office.office_floor }} </td>
+        <td> {{ office.more_data_on_office }} </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+{% endblock content %}

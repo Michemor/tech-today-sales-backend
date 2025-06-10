@@ -1,10 +1,14 @@
 {% extends 'base.html' %}
-
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+{% endblock head %}
 {% block title %} Sales Locations {% endblock %}
 
 {% block content %}
 
+<div class='sales_locations'>
 <h1> Sales Locations </h1>
+<a href="/templates/base.html">Back</a>
 {% with messages = get_flashed_messages() %}
       {% if messages %}
         <ul>
@@ -24,13 +28,13 @@
     <input type="text" name="building-name" id="building-name"> <br>
 
     <p> Does the building have access to Fibre? </p> <br>
-    <input type="radio" name="fibre-val" value="Yes" id="fibre-yes">  <br>
+    <input type="radio" name="fibre-val" value="Yes" id="fibre-yes">  
     <label > Yes </label> <br>
 
-    <input type="radio" name="fibre-val" value="No" id="fibre-no"> <br>
+    <input type="radio" name="fibre-val" value="No" id="fibre-no"> 
     <label> No </label> <br>
 
-    <input type="radio" name="fibre-val" value="Connect to MyISP Base Station" id="myisp-base"> <br>
+    <input type="radio" name="fibre-val" value="Connect to MyISP Base Station" id="myisp-base"> 
     <label> Can connect to MyISP Base Statio </label> <br>
 
     
@@ -73,4 +77,5 @@
 </div>
 <button type="submit"> Submit </button>
 </form>
+</div>
 {% endblock content %}
