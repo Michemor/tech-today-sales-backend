@@ -10,6 +10,9 @@ from models.clientOfficeModel import ClientOffice
 from models.meetingModel import Meeting
 from models.office import BuildingOffice
 from models.buildingModel import Building
+from flask_cors import CORS
+
+
 
 # importing blueprints to be registered
 from client_data.client_info import client_bp
@@ -37,6 +40,8 @@ def create_app():
     app.register_blueprint(admin_bp)
     app.register_blueprint(client_bp)
     app.register_blueprint(location_bp)
+    # handles CORS for the app
+    CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
 
     with app.app_context():
         db.create_all()
