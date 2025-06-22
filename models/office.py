@@ -17,3 +17,12 @@ class BuildingOffice(db.Model):
     def __repr__(self):
         
         return f'Office {self.office_name}'
+    
+    def to_dict(self):
+        return {
+            'office_id': self.office_id,
+            'office_name': self.office_name,
+            'office_floor': self.office_floor,
+            'more_data_on_office': self.more_data_on_office,
+            'building_id': self.building_id
+        }

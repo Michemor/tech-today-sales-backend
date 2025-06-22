@@ -17,11 +17,11 @@ class Internet(db.Model):
     __tablename__ = 'internet'
     
     internet_id = db.Column(db.Integer, primary_key=True)
-    is_isp_connected = db.Column(db.Boolean, nullable=False)
+    is_isp_connected = db.Column(db.String, nullable=False)
     isp_name = db.Column(db.String, default=None)
     internet_connection_type = db.Column(db.String, default=None)
     service_provided = db.Column(db.String, default=None)
-    isp_price = db.Column(db.Numeric, default=0)
+    isp_price = db.Column(db.String, default=0)
     deal_status = db.Column(db.String, default=None)
     client_id = db.Column(db.Integer, db.ForeignKey('client.client_id'))
     timestamp = db.Column(db.DateTime, default=datetime.now)
@@ -29,3 +29,15 @@ class Internet(db.Model):
     def __repr__(self):
         return f'Internet status: \n{self.is_isp_connected} \n{self.timestamp}'
     
+    def to_dict(self):
+        return {
+            'internet_id': self.internet_id,
+            'is_isp_connected': self.is_isp_connected,
+            'isp_name': self.isp_name,
+            'internet_connection_type': self.internet_connection_type,
+            'service_provided': self.service_provided,
+            'isp_price': self.isp_price,
+            'deal_status': self.deal_status,
+            'client_id': self.client_id,
+            'timestamp': self.timestamp.isoformat()
+        }

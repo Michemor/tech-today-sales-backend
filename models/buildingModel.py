@@ -19,3 +19,13 @@ class Building(db.Model):
     def __repr__(self):
 
         return f'Building: {self.building_name}'
+    
+    def to_dict(self):
+        return {
+            'building_id': self.building_id,
+            'building_name': self.building_name,
+            'is_fibre_setup': self.is_fibre_setup,
+            'ease_of_access': self.ease_of_access,
+            'access_information': self.access_information,
+            'number_offices': self.number_offices
+        }

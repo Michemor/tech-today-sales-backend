@@ -33,3 +33,14 @@ class Client(db.Model):
     def __repr__(self):
         return f'Client {self.client_name} {self.timestamp}'
     
+    def to_dict(self):
+        return {
+            'client_id': self.client_id,
+            'client_name': self.client_name,
+            'client_contact': self.client_contact,
+            'client_email': self.client_email,
+            'job_title': self.job_title,
+            'deal_information': self.deal_information,
+            'timestamp': self.timestamp.isoformat()
+        }
+    

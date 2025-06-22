@@ -24,21 +24,19 @@ def addLocation():
 
     if not data:
         return jsonify({
-            'success': False, 
-            'message': 'No data provided'}), 400
+            'success': False,
+            'message': 'No data provided'
+        }), 400
 
-    
     # fetch data from json response from frontend react application
-
-
-    building_name = data.get('building_name')
-    is_fibre = data.get('is_fibre_setup')
-    ease_access = data.get('ease_of_access')
-    access_info = data.get('more_info_access')
-    number_offices = data.get('number_of_offices')
-    office_name = data.get('office_name')
-    other_offices = data.get('more_offices')
-    office_floor = data.get('office_floor')
+    building_name = data['building_name']
+    is_fibre = data['is_fibre_setup']
+    ease_access = data['ease_of_access']
+    access_info = data['more_info_access']
+    number_offices = data['number_of_offices']
+    office_name = data['office_name']
+    other_offices = data['more_offices']
+    office_floor = data['office_floor']
 
     
     existing_building = db.session.execute(
@@ -108,12 +106,21 @@ def listLocations():
     List the offices and buildings
     """
 
+    buildingList = []
+    officeList = []
+
     buildings = db.session.execute(db.select(Building).order_by(Building.building_id)).scalars().all()
     offices = db.session.execute(db.select(BuildingOffice).order_by(BuildingOffice.office_id)).scalars().all()
+
+    for building in buildings:
+        buildingList.append(building.to_dict())
+    
+    for office in offices:
+        officeList.append(office.to_dict())
 
     return jsonify({
         'success': True,
         'message': "Locations and Buildings fetched successfully",
-        'buildings': buildings,
-        'offices': offices
+        'buildings': buildingList,
+        'offices': officeList
     }), 200

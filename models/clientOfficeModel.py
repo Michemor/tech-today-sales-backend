@@ -13,3 +13,12 @@ class ClientOffice(db.Model):
 
     def __repr__(self):
         return f'Office: {self.office_name}'
+    
+    def to_dict(self):
+        return {
+            'office_id': self.office_id,
+            'office_name': self.office_name,
+            'staff_number': self.staff_number,
+            'industry_category': self.industry_category,
+            'client_id': self.client_id
+        }
