@@ -210,3 +210,113 @@ def get_offices():
         'success': True,
         'offices': office_list
     }), 200
+
+@client_bp.route('/deleteclient', methods=['DELETE'])
+def delete_client():
+    """
+    Endpoint to delete a client by ID
+    """
+    data = request.get_json()
+    if not data or 'client_id' not in data:
+        return jsonify({
+            'success': False,
+            'message': 'Client ID is required'
+        }), 400
+
+    client_id = data['client_id']
+    
+    client = db.session.execute(db.select(Client).filter_by(client_id=client_id)).scalar_one_or_none()
+    
+    if not client:
+        return jsonify({
+            'success': False,
+            'message': 'Client not found'
+        }), 404
+
+    try:
+        db.session.delete(client)
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'message': 'Client deleted successfully'
+        }), 200
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': f"Database error: {e}"
+        }), 500
+
+@client_bp.route('/meetings/<meeting_id>', methods=['DELETE'])
+def delete_meeting(meeting_id):
+    """
+    Endpoint to delete a meeting by ID
+    """
+    meeting = db.session.execute(db.select(Meeting).filter_by(meeting_id=meeting_id)).scalar_one_or_none()
+    
+    if not meeting:
+        return jsonify({
+            'success': False,
+            'message': 'Meeting not found'
+        }), 404
+
+    try:
+        db.session.delete(meeting)
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'message': 'Meeting deleted successfully'
+        }), 200
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': f"Database error: {e}"
+        }), 500
+
+@client_bp.route('/meetings/<meeting_id>', methods=['PUT'])
+def updateMeeting(meeting_id):
+    """
+    Endpoint to update a meeting by ID
+    """
+    data = request.get_json()
+
+    required_fields = ['meeting_date', 'meeting_location', 'meeting_remarks', 'meetingtype', 'meeting_status']
+    if not all(field in data for field in required_fields):
+        return jsonify({
+            'success': False,
+            'message': 'Missing required fields'
+        }), 400
+    
+    if not data:
+        return jsonify({
+            'success': False,
+            'message': 'No data provided'
+        }), 400
+
+    meeting = db.session.execute(db.select(Meeting).filter_by(meeting_id=meeting_id)).scalar_one_or_none()
+    
+    if not meeting:
+        return jsonify({
+            'success': False,
+            'message': 'Meeting not found'
+        }), 404
+
+    # Update meeting fields
+    for key, value in data.items():
+        setattr(meeting, key, value)
+
+    try:
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'message': 'Meeting updated successfully',
+            'meeting': meeting.to_dict()
+        }), 200
+    
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': f"Database error: {e}"
+        }), 500
