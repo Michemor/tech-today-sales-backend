@@ -141,39 +141,72 @@ def salesOffice():
         }), 500
 
 
-@client_bp.route('/listclients', methods=['GET'])
-def client_data():
+@client_bp.route('/meetings', methods=['GET'])
+def get_meetings():
     """
     Displays a lists of clients from the database
     """
-
-    client_data = []
     meeting_data = []
-    internet_data = []
-    office_data = []
 
-    client_list = db.session.execute(db.select(Client).order_by(Client.timestamp)).scalars().all()
-    meeting_list = db.session.execute(db.select(Meeting).order_by(Meeting.timestamp)).scalars().all()
-    internet_list = db.session.execute(db.select(Internet).order_by(Internet.timestamp)).scalars().all()
-    office_list = db.session.execute(db.select(ClientOffice).order_by(ClientOffice.timestamp)).scalars().all()
+    meeting_list = db.session.execute(db.select(Meeting).order_by(Meeting.meeting_id)).scalars().all()
 
-    for client in client_list:
-        client_data.append(client.to_dict())
     
     for meeting in meeting_list:
         meeting_data.append(meeting.to_dict())
 
-    for internet in internet_list:
-        internet_data.append(internet.to_dict())
-    
-    for office in office_list:
-        office_data.append(office.to_dict())
 
     return jsonify({
         'success': True,
-        'clients': client_data,
         'meetings': meeting_data,
-        'internet': internet_data,
-        'offices': office_data
     }), 200
 
+
+@client_bp.route('/clients', methods=['GET'])
+def get_clients():
+    """
+    Endpoint to get all clients
+    """
+
+    clientsDict = []
+
+    clients = db.session.execute(db.select(Client).order_by(Client.client_id)).scalars().all()
+
+    for client in clients:
+        clientsDict.append(client.to_dict())
+
+    return jsonify({
+        'success': True,
+        'clients': clientsDict
+    }), 200
+
+
+@client_bp.route('/internet', methods=['GET'])
+def get_internet_status():
+    """
+    Endpoint to get all internet statuses
+    """
+
+    internetDict = []
+    internet_statuses = db.session.execute(db.select(Internet).order_by(Internet.internet_id)).scalars().all()
+
+    for internet in internet_statuses:
+        internetDict.append(internet.to_dict())
+    
+
+    return jsonify({
+        'success': True,
+        'internet': internetDict
+    }), 200
+
+@client_bp.route('/offices', methods=['GET'])
+def get_offices():
+    """
+    Endpoint to get all client offices
+    """
+    offices = db.session.execute(db.select(ClientOffice).order_by(ClientOffice.office_id)).scalars().all()
+    office_list = [office.to_dict() for office in offices]
+
+    return jsonify({
+        'success': True,
+        'offices': office_list
+    }), 200
