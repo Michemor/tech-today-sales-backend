@@ -14,7 +14,7 @@ class Building(db.Model):
     access_information = db.Column(db.String, nullable=False)
     number_offices = db.Column(db.Integer, nullable=False)
 
-    offices = db.relationship('BuildingOffice', backref='located')
+    offices = db.relationship('BuildingOffice', backref='located', cascade="all, delete-orphan", passive_deletes=True)
 
     def __repr__(self):
 

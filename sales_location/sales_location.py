@@ -124,3 +124,149 @@ def listLocations():
         'buildings': buildingList,
         'offices': officeList
     }), 200
+
+@location_bp.route('/building/<int:building_id>', methods=['DELETE'])
+def deleteBuilding(building_id):
+    """
+    Endpoint to delete a building by ID
+    """
+    
+    building = db.session.execute(
+        db.select(Building).filter_by(building_id=building_id)
+    ).scalar_one_or_none()
+
+    if not building:
+        return jsonify({
+            'success': False,
+            'message': 'Building not found'
+        }), 404
+
+    try:
+        db.session.delete(building)
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'message': 'Building deleted successfully'
+        }), 200
+    
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': "Database error: " + str(e)
+        }), 500
+
+@location_bp.route('/building/<int:building_id>', methods=['PUT'])
+def updateBuilding(building_id):
+    """
+    Endpoint to update a building by ID
+    """
+    
+    data = request.get_json()
+    if not data:
+        return jsonify({
+            'success': False,
+            'message': 'No data provided'
+        }), 400
+
+    building = db.session.execute(
+        db.select(Building).filter_by(building_id=building_id)
+    ).scalar_one_or_none()
+
+    if not building:
+        return jsonify({
+            'success': False,
+            'message': 'Building not found'
+        }), 404
+    
+    allowed_fields = ['building_name', 'is_fibre_setup', 'ease_of_access', 'access_information', 'number_offices']
+
+    valid_fields = {key: value for key, value in data.items() if key in allowed_fields}
+    for field, value in valid_fields.items():
+            setattr(building, field, value)
+    
+    try:
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Building updated successfully',
+            'building': building.to_dict()
+        }), 200
+    
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': "Database error: " + str(e)
+        }), 500
+
+@location_bp.route('/office/<int:office_id>', methods=['DELETE'])
+def deleteOffice(office_id):
+    """
+    Endpoint for deleting office
+    """
+    office = db.session.execute(
+        db.select(BuildingOffice).filter_by(office_id=office_id)).scalar_one_or_none()
+    
+    if not office:
+        return jsonify({
+            'success': False,
+            'message': 'Office not found'
+        }), 404
+    
+    try:
+        db.session.delete(office)
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'message': 'Office deleted successfully'
+        }), 200
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': "Database error: " + str(e)
+        }), 500
+
+@location_bp.route('/office/<int:office_id>', methods=['PUT'])
+def updateOffice(office_id):
+    """ Update office details """
+    data = request.get_json()
+    if not data:
+        return jsonify({
+            'success': False,
+            'message': 'No data provided'
+        }), 400
+
+    office = db.session.execute(
+        db.select(BuildingOffice).filter_by(office_id=office_id)
+    ).scalar_one_or_none()
+
+    if not office:
+        return jsonify({
+            'success': False,
+            'message': 'Office not found'
+        }), 404
+    
+    allowed_fields = ['office_name', 'more_data_on_office', 'office_floor']
+
+    valid_fields = {key: value for key, value in data.items() if key in allowed_fields}
+    for field, value in valid_fields.items():
+            setattr(office, field, value)
+    
+    try:
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Office updated successfully',
+            'office': office.to_dict()
+        }), 200
+    
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': "Database error: " + str(e)
+        }), 500

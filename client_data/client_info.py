@@ -211,8 +211,6 @@ def get_offices():
         'offices': office_list
     }), 200
 
-@client_bp.route('/deleteclient', methods=['DELETE'])
-def delete_client():
     """
     Endpoint to delete a client by ID
     """
@@ -247,8 +245,205 @@ def delete_client():
             'message': f"Database error: {e}"
         }), 500
 
-@client_bp.route('/meetings/<meeting_id>', methods=['DELETE'])
-def delete_meeting(meeting_id):
+
+@client_bp.route('/client/<client_id>', methods=['PUT'])
+def updateClient(client_id):
+    data = request.get_json()
+    
+    if not data:
+        return jsonify({
+            'success': False,
+            'message': 'No data provided'
+        }), 400
+
+    # Find the client first
+    client = db.session.execute(db.select(Client).filter_by(client_id=client_id)).scalar_one_or_none()
+    
+    if not client:
+        return jsonify({
+            'success': False,
+            'message': 'Client not found'
+        }), 404
+
+    # Define allowed fields that can be updated
+    allowed_fields = ['client_name', 'client_contact', 'client_email', 'job_title', 'deal_information']
+    
+    # Check if at least one valid field is provided
+    valid_fields = {key: value for key, value in data.items() if key in allowed_fields}
+    
+    if not valid_fields:
+        return jsonify({
+            'success': False,
+            'message': 'No valid fields provided for update'
+        }), 400
+    
+    # Update only the provided valid fields
+    for key, value in valid_fields.items():
+        setattr(client, key, value)
+    
+    try:
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'message': 'Client data updated successfully',
+            'updatedClient': client.to_dict()
+        }), 200
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': f"Database error: {e}"
+        }), 500
+    
+@client_bp.route('/internet/<internet_id>', methods=['PUT'])
+def updateInternet(internet_id):
+    """
+    Endpoint to update internet information by ID
+    """
+    data = request.get_json()
+    
+    if not data:
+        return jsonify({
+            'success': False,
+            'message': 'No data provided'
+        }), 400
+
+    internet = db.session.execute(db.select(Internet).filter_by(internet_id=internet_id)).scalar_one_or_none()
+    
+    if not internet:
+        return jsonify({
+            'success': False,
+            'message': 'Internet information not found'
+        }), 404
+
+    # Update internet fields
+    for key, value in data.items():
+        setattr(internet, key, value)
+
+    try:
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'message': 'Internet information updated successfully',
+            'internet': internet.to_dict()
+        }), 200
+    
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': f"Database error: {e}"
+        }), 500
+
+@client_bp.route('/office/<office_id>', methods=['PUT'])
+def updateOffice(office_id):
+    """
+    Endpoint to update office information by ID
+    """
+    data = request.get_json()
+
+    if not data:
+        return jsonify({
+            'success': False,
+            'message': 'No data provided'
+        }), 400
+
+    office = db.session.execute(db.select(Office).filter_by(office_id=office_id)).scalar_one_or_none()
+
+    if not office:
+        return jsonify({
+            'success': False,
+            'message': 'Office information not found'
+        }), 404
+
+    # Update office fields
+    for key, value in data.items():
+        setattr(office, key, value)
+
+    try:
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'message': 'Office information updated successfully',
+            'office': office.to_dict()
+        }), 200
+
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': f"Database error: {e}"
+        }), 500
+    
+@client_bp.route('/meeting/<meeting_id>', methods=['PUT'])
+def updateMeeting(meeting_id):
+    """
+    Endpoint to update meeting information by ID
+    """
+    data = request.get_json()
+    
+    if not data:
+        return jsonify({
+            'success': False,
+            'message': 'No data provided'
+        }), 400
+
+    meeting = db.session.execute(db.select(Meeting).filter_by(meeting_id=meeting_id)).scalar_one_or_none()
+    
+    if not meeting:
+        return jsonify({
+            'success': False,
+            'message': 'Meeting not found'
+        }), 404
+
+    # Update meeting fields
+    for key, value in data.items():
+        setattr(meeting, key, value)
+
+    try:
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'message': 'Meeting information updated successfully',
+            'meeting': meeting.to_dict()
+        }), 200
+    
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': f"Database error: {e}"
+        }), 500
+
+@client_bp.route('/client/<client_id>', methods=['DELETE'])
+def deleteClient(client_id):
+    """
+    Endpoint to delete a client by ID
+    """
+    client = db.session.execute(db.select(Client).filter_by(client_id=client_id)).scalar_one_or_none()
+    
+    if not client:
+        return jsonify({
+            'success': False,
+            'message': 'Client not found'
+        }), 404
+
+    try:
+        db.session.delete(client)
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'message': 'Client deleted successfully'
+        }), 200
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': f"Database error: {e}"
+        }), 500
+
+@client_bp.route('/meeting/<meeting_id>', methods=['DELETE'])
+def deleteMeeting(meeting_id):
     """
     Endpoint to delete a meeting by ID
     """
@@ -274,46 +469,53 @@ def delete_meeting(meeting_id):
             'message': f"Database error: {e}"
         }), 500
 
-@client_bp.route('/meetings/<meeting_id>', methods=['PUT'])
-def updateMeeting(meeting_id):
+@client_bp.route('/internet/<internet_id>', methods=['DELETE'])
+def deleteInternet(internet_id):
     """
-    Endpoint to update a meeting by ID
+    Endpoint to delete internet information by ID
     """
-    data = request.get_json()
-
-    required_fields = ['meeting_date', 'meeting_location', 'meeting_remarks', 'meetingtype', 'meeting_status']
-    if not all(field in data for field in required_fields):
-        return jsonify({
-            'success': False,
-            'message': 'Missing required fields'
-        }), 400
+    internet = db.session.execute(db.select(Internet).filter_by(internet_id=internet_id)).scalar_one_or_none()
     
-    if not data:
+    if not internet:
         return jsonify({
             'success': False,
-            'message': 'No data provided'
-        }), 400
-
-    meeting = db.session.execute(db.select(Meeting).filter_by(meeting_id=meeting_id)).scalar_one_or_none()
-    
-    if not meeting:
-        return jsonify({
-            'success': False,
-            'message': 'Meeting not found'
+            'message': 'Internet information not found'
         }), 404
 
-    # Update meeting fields
-    for key, value in data.items():
-        setattr(meeting, key, value)
-
     try:
+        db.session.delete(internet)
         db.session.commit()
         return jsonify({
             'success': True,
-            'message': 'Meeting updated successfully',
-            'meeting': meeting.to_dict()
+            'message': 'Internet information deleted successfully'
         }), 200
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': f"Database error: {e}"
+        }), 500
+
+@client_bp.route('/office/<office_id>', methods=['DELETE'])
+def deleteOffice(office_id):
+    """
+    Endpoint to delete office information by ID
+    """
+    office = db.session.execute(db.select(ClientOffice).filter_by(office_id=office_id)).scalar_one_or_none()
     
+    if not office:
+        return jsonify({
+            'success': False,
+            'message': 'Office information not found'
+        }), 404
+
+    try:
+        db.session.delete(office)
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'message': 'Office information deleted successfully'
+        }), 200
     except SQLAlchemyError as e:
         db.session.rollback()
         return jsonify({

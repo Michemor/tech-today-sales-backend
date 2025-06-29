@@ -26,9 +26,9 @@ class Client(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.now)
     
 
-    meetings = db.relationship('Meeting', backref='attends', uselist=False)
-    offices = db.relationship('ClientOffice', backref='owns', uselist=False)
-    internet = db.relationship('Internet', backref='hasinternet', uselist=False)
+    meetings = db.relationship('Meeting', backref='attends', cascade="all, delete-orphan", passive_deletes=True)
+    offices = db.relationship('ClientOffice', backref='owns', cascade="all, delete-orphan", passive_deletes=True)
+    internet = db.relationship('Internet', backref='hasinternet', cascade="all, delete-orphan", passive_deletes=True)
 
     def __repr__(self):
         return f'Client {self.client_name} {self.timestamp}'
