@@ -9,7 +9,7 @@ class ClientOffice(db.Model):
     office_name = db.Column(db.String, nullable=False)
     staff_number = db.Column(db.Integer, nullable=False)
     industry_category = db.Column(db.String, nullable=False)
-    client_id = db.Column(db.Integer, db.ForeignKey('client.client_id'))
+    client_id = db.Column(db.Integer, db.ForeignKey('client.client_id', ondelete="CASCADE"), nullable=False)
 
     def __repr__(self):
         return f'Office: {self.office_name}'

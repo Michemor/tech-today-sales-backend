@@ -100,35 +100,54 @@ def addLocation():
         }), 400
 
 
-@location_bp.route('/listsites')
-def listLocations():
+@location_bp.route('/locations/buildings', methods=['GET'])
+def getBuilding():
     """
-    List the offices and buildings
+    Endpoint to get all buildings
     """
-
-    buildingList = []
-    officeList = []
-
-    buildings = db.session.execute(db.select(Building).order_by(Building.building_id)).scalars().all()
-    offices = db.session.execute(db.select(BuildingOffice).order_by(BuildingOffice.office_id)).scalars().all()
-
-    for building in buildings:
-        buildingList.append(building.to_dict())
     
-    for office in offices:
-        officeList.append(office.to_dict())
+    buildings = db.session.execute(db.select(Building).order_by(Building.building_id)).scalars().all()
+    
+    if not buildings:
+        return jsonify({
+            'success': False,
+            'message': 'No buildings found'
+        }), 404
+
+    buildingList = [building.to_dict() for building in buildings]
 
     return jsonify({
         'success': True,
-        'message': "Locations and Buildings fetched successfully",
-        'buildings': buildingList,
+        'message': "Buildings fetched successfully",
+        'buildings': buildingList
+    }), 200
+
+@location_bp.route('/locations/offices', methods=['GET'])
+def getofficeBuilding():
+    """
+    Endpoint to get all offices in a building by building ID
+    """
+    
+    offices = db.session.execute(db.select(BuildingOffice).order_by(BuildingOffice.office_id)).scalars().all()
+
+    if not offices:
+        return jsonify({
+            'success': False,
+            'message': 'No offices found for this building'
+        }), 404
+
+    officeList = [office.to_dict() for office in offices]
+
+    return jsonify({
+        'success': True,
+        'message': "Offices fetched successfully",
         'offices': officeList
     }), 200
 
-@location_bp.route('/building/<int:building_id>', methods=['DELETE'])
+@location_bp.route('/locations/building/<int:building_id>', methods=['DELETE'])
 def deleteBuilding(building_id):
     """
-    Endpoint to delete a building by ID
+    Endpoint to delete a building by ID along with all related offices
     """
     
     building = db.session.execute(
@@ -142,11 +161,21 @@ def deleteBuilding(building_id):
         }), 404
 
     try:
+        # Delete related offices first to avoid foreign key constraint violations
+        offices = db.session.execute(
+            db.select(BuildingOffice).filter_by(building_id=building_id)
+        ).scalars().all()
+        
+        for office in offices:
+            db.session.delete(office)
+        
+        # Finally delete the building
         db.session.delete(building)
         db.session.commit()
+        
         return jsonify({
             'success': True,
-            'message': 'Building deleted successfully'
+            'message': 'Building and all related offices deleted successfully'
         }), 200
     
     except SQLAlchemyError as e:
@@ -156,7 +185,7 @@ def deleteBuilding(building_id):
             'message': "Database error: " + str(e)
         }), 500
 
-@location_bp.route('/building/<int:building_id>', methods=['PUT'])
+@location_bp.route('/locations/building/<int:building_id>', methods=['PUT'])
 def updateBuilding(building_id):
     """
     Endpoint to update a building by ID
@@ -201,7 +230,7 @@ def updateBuilding(building_id):
             'message': "Database error: " + str(e)
         }), 500
 
-@location_bp.route('/office/<int:office_id>', methods=['DELETE'])
+@location_bp.route('/locations/office/<int:office_id>', methods=['DELETE'])
 def deleteOffice(office_id):
     """
     Endpoint for deleting office
@@ -229,7 +258,7 @@ def deleteOffice(office_id):
             'message': "Database error: " + str(e)
         }), 500
 
-@location_bp.route('/office/<int:office_id>', methods=['PUT'])
+@location_bp.route('/locations/office/<int:office_id>', methods=['PUT'])
 def updateOffice(office_id):
     """ Update office details """
     data = request.get_json()

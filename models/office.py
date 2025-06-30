@@ -12,7 +12,7 @@ class BuildingOffice(db.Model):
     office_floor = db.Column(db.Integer, nullable=False)
     more_data_on_office = db.Column(db.Text, nullable=False)
 
-    building_id = db.Column(db.Integer, db.ForeignKey('building.building_id'), nullable=False)
+    building_id = db.Column(db.Integer, db.ForeignKey('building.building_id', ondelete="CASCADE"), nullable=False)
 
     def __repr__(self):
         

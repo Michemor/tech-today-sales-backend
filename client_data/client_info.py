@@ -418,7 +418,7 @@ def updateMeeting(meeting_id):
 @client_bp.route('/client/<client_id>', methods=['DELETE'])
 def deleteClient(client_id):
     """
-    Endpoint to delete a client by ID
+    Endpoint to delete a client by ID along with all related records
     """
     client = db.session.execute(db.select(Client).filter_by(client_id=client_id)).scalar_one_or_none()
     
@@ -429,11 +429,30 @@ def deleteClient(client_id):
         }), 404
 
     try:
+        # Delete related records first to avoid foreign key constraint violations
+        
+        # Delete related meetings
+        meetings = db.session.execute(db.select(Meeting).filter_by(client_id=client_id)).scalars().all()
+        for meeting in meetings:
+            db.session.delete(meeting)
+        
+        # Delete related internet records
+        internet_records = db.session.execute(db.select(Internet).filter_by(client_id=client_id)).scalars().all()
+        for internet in internet_records:
+            db.session.delete(internet)
+        
+        # Delete related office records
+        office_records = db.session.execute(db.select(ClientOffice).filter_by(client_id=client_id)).scalars().all()
+        for office in office_records:
+            db.session.delete(office)
+        
+        # Finally delete the client
         db.session.delete(client)
         db.session.commit()
+        
         return jsonify({
             'success': True,
-            'message': 'Client deleted successfully'
+            'message': 'Client and all related records deleted successfully'
         }), 200
     except SQLAlchemyError as e:
         db.session.rollback()

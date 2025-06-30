@@ -13,7 +13,7 @@ class Meeting(db.Model):
     meeting_remarks = db.Column(db.Text, nullable=False)
     meetingtype = db.Column(db.String, nullable=False)  
     meeting_status = db.Column(db.String, nullable=False)
-    client_id = db.Column(db.Integer, db.ForeignKey('client.client_id'))
+    client_id = db.Column(db.Integer, db.ForeignKey('client.client_id', ondelete="CASCADE"))
 
 
     def __repr__(self):

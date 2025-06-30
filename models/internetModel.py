@@ -23,7 +23,7 @@ class Internet(db.Model):
     service_provided = db.Column(db.String, default=None)
     isp_price = db.Column(db.String, default=0)
     deal_status = db.Column(db.String, default=None)
-    client_id = db.Column(db.Integer, db.ForeignKey('client.client_id'))
+    client_id = db.Column(db.Integer, db.ForeignKey('client.client_id', ondelete="CASCADE"), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.now)
 
     def __repr__(self):
