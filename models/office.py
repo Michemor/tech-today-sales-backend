@@ -10,9 +10,11 @@ class BuildingOffice(db.Model):
     office_id = db.Column(db.Integer, primary_key=True, nullable=False)
     office_name = db.Column(db.String, nullable=False)
     office_floor = db.Column(db.Integer, nullable=False)
+    staff_number = db.Column(db.Integer, nullable=False)
+    industry_category = db.Column(db.String, nullable=False)
     more_data_on_office = db.Column(db.Text, nullable=False)
-
     building_id = db.Column(db.Integer, db.ForeignKey('building.building_id', ondelete="CASCADE"), nullable=False)
+    client_id = db.Column(db.Integer, db.ForeignKey('Client.client_id', ondelete="CASCADE"), nullable=False)
 
     def __repr__(self):
         

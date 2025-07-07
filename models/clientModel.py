@@ -1,5 +1,6 @@
 from database import db
 from datetime import datetime
+from sqlalchemy import func
 
 
 class Client(db.Model):
@@ -23,12 +24,12 @@ class Client(db.Model):
     client_email = db.Column(db.String, unique=True, nullable=False)
     job_title = db.Column(db.String, unique=True, nullable=False)
     deal_information = db.Column(db.Text, unique=True, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.now)
-    
+    timestamp = db.Column(db.DateTime, default=func.now())
 
     meetings = db.relationship('Meeting', backref='attends', cascade="all, delete-orphan", passive_deletes=True)
-    offices = db.relationship('ClientOffice', backref='owns', cascade="all, delete-orphan", passive_deletes=True)
     internet = db.relationship('Internet', backref='hasinternet', cascade="all, delete-orphan", passive_deletes=True)
+    buildings = db.relationship('Building', backref='owns', cascade="all, delete-orphan", passive_deletes=True)
+
 
     def __repr__(self):
         return f'Client {self.client_name} {self.timestamp}'

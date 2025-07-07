@@ -6,7 +6,6 @@ from config import Config
 from models.clientModel import Client
 from models.internetModel import Internet
 from models.userModel import User
-from models.clientOfficeModel import ClientOffice
 from models.meetingModel import Meeting
 from models.office import BuildingOffice
 from models.buildingModel import Building
@@ -15,9 +14,9 @@ from flask_cors import CORS
 
 
 # importing blueprints to be registered
-from client_data.client_info import client_bp
+from views.client_info import client_bp
 from admin.admin import admin_bp
-from sales_location.sales_location import location_bp
+from views.sales_location import location_bp
 
 
 

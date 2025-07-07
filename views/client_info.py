@@ -4,7 +4,7 @@ from models.userModel import User
 from database import db
 from models.internetModel import Internet
 from models.meetingModel import Meeting
-from models.clientOfficeModel import ClientOffice
+from models.office import BuildingOffice
 from sqlalchemy.exc import IntegrityError, DataError, SQLAlchemyError
 
 """
@@ -39,7 +39,7 @@ def userLogin():
             'message': 'Invalid username or password'
         }), 401
 
-
+    
 
 @client_bp.route('/salesdetails', methods=['POST'])
 def salesOffice():
@@ -53,26 +53,29 @@ def salesOffice():
             "success": False,
             "message": 'No data provided'
           }), 400)
-    
+ 
+      # client information fetched from frontend
     client_name = data.get('client_name')
     client_contact = data.get('contact')
     client_email = data.get('client_email')
     job_title = data.get('job')
     deal_information = data.get('deal_info')
+
+    # meeting information fetched from frontend
     date = data.get('meetingDate')
     location = data.get('meetingLocation')
     type_of_meeting = data.get('meetingType')
     remarks = data.get('meetingRemarks')
     status = data.get('meetingStatus')
+
+    # internet information
     isp_connected = data.get('is_connected')
     isp_name = data.get('isp_name')
     net_connection_type = data.get('connection_type')
     product = data.get('product')
     net_price = data.get('net_price')
     deal_status = data.get('deal_status')
-    office_name = data.get('office_name')
-    staff_number = data.get('number_staff')
-    industry_category = data.get('industry')
+
     
 
     new_client = Client(client_name = client_name, 
@@ -80,6 +83,7 @@ def salesOffice():
                         client_email=client_email, 
                         job_title = job_title,
                         deal_information = deal_information)
+
     
     new_meeting = Meeting(meeting_date = date, 
                           meeting_location = location,
@@ -97,14 +101,9 @@ def salesOffice():
                             isp_price = net_price,
                             deal_status = deal_status,
                             hasinternet = new_client)
-    
-    new_office = ClientOffice(office_name = office_name,
-                        staff_number = staff_number,
-                        industry_category = industry_category,
-                        owns = new_client)
         
     try:
-        db.session.add_all([new_client, new_meeting, new_internet, new_office])
+        db.session.add_all([new_client, new_meeting, new_internet])
         db.session.commit()
 
         return jsonify({
@@ -171,6 +170,7 @@ def get_clients():
 
     clients = db.session.execute(db.select(Client).order_by(Client.client_id)).scalars().all()
 
+
     for client in clients:
         clientsDict.append(client.to_dict())
 
@@ -203,48 +203,13 @@ def get_offices():
     """
     Endpoint to get all client offices
     """
-    offices = db.session.execute(db.select(ClientOffice).order_by(ClientOffice.office_id)).scalars().all()
+    offices = db.session.execute(db.select(BuildingOffice).order_by(BuildingOffice.office_id)).scalars().all()
     office_list = [office.to_dict() for office in offices]
 
     return jsonify({
         'success': True,
         'offices': office_list
     }), 200
-
-    """
-    Endpoint to delete a client by ID
-    """
-    data = request.get_json()
-    if not data or 'client_id' not in data:
-        return jsonify({
-            'success': False,
-            'message': 'Client ID is required'
-        }), 400
-
-    client_id = data['client_id']
-    
-    client = db.session.execute(db.select(Client).filter_by(client_id=client_id)).scalar_one_or_none()
-    
-    if not client:
-        return jsonify({
-            'success': False,
-            'message': 'Client not found'
-        }), 404
-
-    try:
-        db.session.delete(client)
-        db.session.commit()
-        return jsonify({
-            'success': True,
-            'message': 'Client deleted successfully'
-        }), 200
-    except SQLAlchemyError as e:
-        db.session.rollback()
-        return jsonify({
-            'success': False,
-            'message': f"Database error: {e}"
-        }), 500
-
 
 @client_bp.route('/client/<client_id>', methods=['PUT'])
 def updateClient(client_id):
@@ -348,7 +313,7 @@ def updateOffice(office_id):
             'message': 'No data provided'
         }), 400
 
-    office = db.session.execute(db.select(Office).filter_by(office_id=office_id)).scalar_one_or_none()
+    office = db.session.execute(db.select(BuildingOffice).filter_by(office_id=office_id)).scalar_one_or_none()
 
     if not office:
         return jsonify({
@@ -442,7 +407,7 @@ def deleteClient(client_id):
             db.session.delete(internet)
         
         # Delete related office records
-        office_records = db.session.execute(db.select(ClientOffice).filter_by(client_id=client_id)).scalars().all()
+        office_records = db.session.execute(db.select(BuildingOffice).filter_by(client_id=client_id)).scalars().all()
         for office in office_records:
             db.session.delete(office)
         
@@ -517,10 +482,11 @@ def deleteInternet(internet_id):
 
 @client_bp.route('/office/<office_id>', methods=['DELETE'])
 def deleteOffice(office_id):
+
     """
     Endpoint to delete office information by ID
     """
-    office = db.session.execute(db.select(ClientOffice).filter_by(office_id=office_id)).scalar_one_or_none()
+    office = db.session.execute(db.select(BuildingOffice).filter_by(office_id=office_id)).scalar_one_or_none()
     
     if not office:
         return jsonify({
@@ -541,3 +507,79 @@ def deleteOffice(office_id):
             'success': False,
             'message': f"Database error: {e}"
         }), 500
+
+@client_bp.route('/sales', methods=['GET'])
+def getSalesData():
+    """
+    Endpoint to get sales data - joins all client-related data
+    """
+    # Query with outer joins to get all clients even if they don't have related records
+    sales_data = db.session.query(Client, Meeting, Internet, BuildingOffice) \
+        .select_from(Client) \
+        .outerjoin(Meeting, Client.client_id == Meeting.client_id) \
+        .outerjoin(Internet, Client.client_id == Internet.client_id) \
+        .outerjoin(BuildingOffice, Client.client_id ==BuildingOffice.client_id) \
+        .all()
+    
+    # Convert results to a list of combined dictionaries
+    sales_list = []
+    for client, meeting, internet, office in sales_data:
+        # Start with client data as the base
+        combined_data = client.to_dict()
+        
+        # Add meeting data (if exists)
+        if meeting:
+            meeting_dict = meeting.to_dict()
+            # Prefix meeting fields to avoid conflicts
+            for key, value in meeting_dict.items():
+                combined_data[f"meeting_{key}"] = value
+        else:
+            combined_data.update({
+                "meeting_id": None,
+                "meeting_date": None,
+                "meeting_location": None,
+                "meetingtype": None,
+                "meeting_remarks": None,
+                "meeting_status": None
+            })
+        
+        # Add internet data (if exists)
+        if internet:
+            internet_dict = internet.to_dict()
+            # Prefix internet fields to avoid conflicts
+            for key, value in internet_dict.items():
+                combined_data[f"internet_{key}"] = value
+        else:
+            combined_data.update({
+                "internet_id": None,
+                "is_isp_connected": None,
+                "isp_name": None,
+                "internet_connection_type": None,
+                "service_provided": None,
+                "isp_price": None,
+                "deal_status": None
+            })
+        
+        # Add office data (if exists)
+        if office:
+            office_dict = office.to_dict()
+            # Prefix office fields to avoid conflicts
+            for key, value in office_dict.items():
+                combined_data[f"office_{key}"] = value
+        else:
+            combined_data.update({
+                "office_id": None,
+                "office_name": None,
+                "staff_number": None,
+                "industry_category": None
+            })
+        
+        sales_list.append(combined_data)
+
+        print(sales_list)
+    
+    return jsonify({
+        'success': True,
+        'sales': sales_list,
+        'total_records': len(sales_list)
+    }), 200
