@@ -40,7 +40,13 @@ def create_app():
     app.register_blueprint(client_bp)
     app.register_blueprint(location_bp)
     # handles CORS for the app
-    CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
+    CORS(app, resources={
+        r"/*": {
+            "origins": ["http://localhost:5173", "http://localhost:5174", "http://127.0.0.1:5173", "http://127.0.0.1:5174"],
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"]
+        }
+    }, supports_credentials=True)
 
     with app.app_context():
         db.create_all()

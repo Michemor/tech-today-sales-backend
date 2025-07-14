@@ -14,7 +14,6 @@ class BuildingOffice(db.Model):
     industry_category = db.Column(db.String, nullable=False)
     more_data_on_office = db.Column(db.Text, nullable=False)
     building_id = db.Column(db.Integer, db.ForeignKey('building.building_id', ondelete="CASCADE"), nullable=False)
-    client_id = db.Column(db.Integer, db.ForeignKey('Client.client_id', ondelete="CASCADE"), nullable=False)
 
     def __repr__(self):
         
@@ -24,6 +23,8 @@ class BuildingOffice(db.Model):
         return {
             'office_id': self.office_id,
             'office_name': self.office_name,
+            'staff_number': self.staff_number,
+            'industry_category': self.industry_category,
             'office_floor': self.office_floor,
             'more_data_on_office': self.more_data_on_office,
             'building_id': self.building_id

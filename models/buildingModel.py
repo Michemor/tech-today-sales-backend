@@ -13,7 +13,7 @@ class Building(db.Model):
     ease_of_access = db.Column(db.Integer, nullable=False)
     access_information = db.Column(db.String, nullable=False)
     number_offices = db.Column(db.Integer, nullable=False)
-    client_id = db.Column(db.Integer, db.ForeignKey('Client.client_id', ondelete="CASCADE"), nullable=False)
+    client_id = db.Column(db.Integer, db.ForeignKey('client.client_id', ondelete="CASCADE"), nullable=False)
 
     offices = db.relationship('BuildingOffice', backref='located', cascade="all, delete-orphan", passive_deletes=True)
 
@@ -28,5 +28,6 @@ class Building(db.Model):
             'is_fibre_setup': self.is_fibre_setup,
             'ease_of_access': self.ease_of_access,
             'access_information': self.access_information,
-            'number_offices': self.number_offices
+            'number_offices': self.number_offices,
+            'client_id': self.client_id
         }
