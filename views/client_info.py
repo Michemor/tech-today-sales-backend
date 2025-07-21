@@ -1,3 +1,4 @@
+from xmlrpc import client
 from flask import Blueprint, request, jsonify
 from models.clientModel import Client
 from models.userModel import User
@@ -39,7 +40,7 @@ def userLogin():
 
 
 @client_bp.route("/salesdetails", methods=["POST"])
-def salesOffice():
+def addSales():
     """
     This endpoint if for fetching user data and saving it in the database
     """
@@ -82,7 +83,7 @@ def salesOffice():
         building_name=data.get("building_name"),
         is_fibre_setup=data.get("is_fibre_setup"),
         ease_of_access=data.get("ease_of_access"),
-        access_information=data.get("access_information"),
+        access_information=data.get("more_info_access"),
         number_offices=data.get("number_offices"),
         owns=new_client,
     )
@@ -90,9 +91,9 @@ def salesOffice():
     new_office = BuildingOffice(
         office_name=data.get("office_name"),
         office_floor=data.get("office_floor"),
-        staff_number=data.get("staff_number"),
-        industry_category=data.get("industry_category"),
-        more_data_on_office=data.get("more_data_on_office"),
+        staff_number=data.get("number_staff"),
+        industry_category=data.get("industry"),
+        more_data_on_office=data.get("more_offices"),
         located=new_building,
     )
 
@@ -430,24 +431,27 @@ def deleteClient(client_id):
 
     try:
         # Delete related records in the correct order to avoid foreign key constraint violations
-        
         # Step 1: Get all buildings for this client
         buildings = (
             db.session.execute(db.select(Building).filter_by(client_id=client_id))
             .scalars()
             .all()
         )
-        
+
         # Step 2: Delete all offices in all buildings owned by this client
         for building in buildings:
             offices = (
-                db.session.execute(db.select(BuildingOffice).filter_by(building_id=building.building_id))
+                db.session.execute(
+                    db.select(BuildingOffice).filter_by(
+                        building_id=building.building_id
+                    )
+                )
                 .scalars()
                 .all()
             )
             for office in offices:
                 db.session.delete(office)
-        
+
         # Step 3: Delete all buildings
         for building in buildings:
             db.session.delete(building)
@@ -574,92 +578,121 @@ def deleteOffice(office_id):
 
 
 @client_bp.route("/sales", methods=["GET"])
-def get_sales_data():
+def get_sales():
     """
-    Endpoint to get all sales data including clients, meetings, internet, and offices
+    Endpoint to get sales data for all clients
     """
-    try:
-        # Get all clients using the same pattern as other endpoints
-        clients = (
-            db.session.execute(db.select(Client).order_by(Client.client_id))
+    clients = db.session.execute(db.select(Client)).scalars().all()
+
+    sales_data = []
+
+    for client in clients:
+        # Get all meetings for this client
+        meetings = (
+            db.session.execute(db.select(Meeting).filter_by(client_id=client.client_id))
             .scalars()
             .all()
         )
 
-        if not clients:
-            return jsonify({"success": False, "message": "No data found"}), 404
+        # Get all internet records for this client
+        internet_records = (
+            db.session.execute(
+                db.select(Internet).filter_by(client_id=client.client_id)
+            )
+            .scalars()
+            .all()
+        )
 
-        sales = []
+        # Get all buildings for this client
+        buildings = db.session.execute( db.select(Building).filter_by(client_id=client.client_id)).scalars().all()
 
-        for client in clients:
-            # Get meetings for this client
-            meetings = (
+        # Get all offices for all buildings of this client
+        for building in buildings:
+            offices = (
                 db.session.execute(
-                    db.select(Meeting).filter_by(client_id=client.client_id)
+                    db.select(BuildingOffice).filter_by(building_id=building.building_id)
                 )
                 .scalars()
                 .all()
-            )
+        )
 
-            # Get internet records for this client
-            internet_records = (
-                db.session.execute(
-                    db.select(Internet).filter_by(client_id=client.client_id)
-                )
-                .scalars()
-                .all()
-            )
+        # Combine all data for this client
+        client_data = {
+            "client": client.to_dict(),
+            "meetings": [meeting.to_dict() for meeting in meetings],
+            "internet_records": [internet.to_dict() for internet in internet_records],
+            "buildings": [building.to_dict() for building in buildings],
+            "offices": [office.to_dict() for office in offices],
+            "total_meetings": len(meetings),
+            "total_buildings": len(buildings),
+            "total_internet_records": len(internet_records),
+            "total_offices": len(offices),
+        }
 
-            # Get buildings for this client (check if client_id column exists)
-            try:
-                buildings = (
-                    db.session.execute(
-                        db.select(Building).filter_by(client_id=client.client_id)
-                    )
-                    .scalars()
-                    .all()
-                )
-            except SQLAlchemyError:
-                # If client_id doesn't exist in building table, return empty list
-                buildings = []
+        sales_data.append(client_data)
 
-            # Build the sales data structure for each client
-            sales_data = {
-                "client": client.to_dict(),
-                "meetings": [meeting.to_dict() for meeting in meetings],
-                "internet": [internet.to_dict() for internet in internet_records],
-                "buildings": [building.to_dict() for building in buildings],
-                "offices": [],
+    return (
+        jsonify(
+            {
+                "success": True,
+                "message": "Sales data retrieved successfully for all clients",
+                "total_clients": len(sales_data),
+                "sales_data": sales_data,
             }
-
-            # Add all offices from all buildings owned by this client
-            for building in buildings:
-                # Get offices for this building
-                offices = (
-                    db.session.execute(
-                        db.select(BuildingOffice).filter_by(
-                            building_id=building.building_id
-                        )
-                    )
-                    .scalars()
-                    .all()
-                )
-                for office in offices:
-                    office_dict = office.to_dict()
-                    office_dict["building_name"] = (
-                        building.building_name
-                    )  # Add building name for reference
-                    sales_data["offices"].append(office_dict)
-
-            sales.append(sales_data)
-            print(sales)
-
-        return jsonify({"success": True, "sales": sales}), 200
-
-    except SQLAlchemyError as e:
-        return jsonify({"success": False, "message": f"Database error: {e}"}), 500
+        ),
+        200,
+    )
 
 
+
+@client_bp.route("/sales/<int:user_id>", methods=["GET"])
+def get_client_data(user_id):
+    """
+    Endpoint to get sales data:
+    - If user_id is provided: returns data for that specific user
+    - If no user_id: returns data for all users
+    """
+
+    # If user_id is provided, return data for specific user
+    user = db.session.get(Client, user_id)
+
+    if not user:
+        return jsonify({
+            "success": False, 
+            "message": "User not found"
+        }), 404
+    # Get all meetings for this user
+    user_meeting = (
+        db.session.execute(db.select(Meeting).filter_by(client_id=user_id))
+        .scalar_one_or_none()
+    )
+    # Get all internet records for this user
+    user_internet = db.session.execute(db.select(Internet).filter_by(client_id=user_id)).scalar_one_or_none()
+    # Get all buildings for this user
+    user_building = db.session.execute(db.select(Building).filter_by(client_id=user_id)).scalar_one_or_none()
+    # Get all offices for all buildings of this user
+    user_office = db.session.execute(db.Select(BuildingOffice).filter_by(building_id=user_building.building_id)).scalar_one_or_none()
+    # Combine all data for this client
+    client_data = {
+        "client": user.to_dict(),
+        "meeting": user_meeting.to_dict(),
+        "internet": user_internet.to_dict(),
+        "building": user_building.to_dict(),
+        "office": user_office.to_dict(),
+    }
+    print(f"======={user.client_name} data retrieved successfully\n {client_data}")
+    return (
+        jsonify(
+            {
+                "success": True,
+                "message": f"Sales data retrieved for client {user.client_name}",
+                "client_data": client_data,
+            }
+        ),
+        200,
+    )
+
+   
 @client_bp.route("/clear-all-data", methods=["DELETE"])
 def clear_all_data():
     """
@@ -668,42 +701,115 @@ def clear_all_data():
     """
     try:
         # Delete in the correct order to respect foreign key constraints
-        
+
         # Step 1: Delete all offices first (they depend on buildings)
         offices = db.session.execute(db.select(BuildingOffice)).scalars().all()
         for office in offices:
             db.session.delete(office)
-        
+
         # Step 2: Delete all buildings (they depend on clients)
         buildings = db.session.execute(db.select(Building)).scalars().all()
         for building in buildings:
             db.session.delete(building)
-        
+
         # Step 3: Delete all internet records (they depend on clients)
         internet_records = db.session.execute(db.select(Internet)).scalars().all()
         for internet in internet_records:
             db.session.delete(internet)
-        
+
         # Step 4: Delete all meetings (they depend on clients)
         meetings = db.session.execute(db.select(Meeting)).scalars().all()
         for meeting in meetings:
             db.session.delete(meeting)
-        
+
         # Step 5: Finally delete all clients
         clients = db.session.execute(db.select(Client)).scalars().all()
         for client in clients:
             db.session.delete(client)
-        
+
         db.session.commit()
-        
-        return jsonify({
-            "success": True,
-            "message": "All data cleared successfully"
-        }), 200
-        
+
+        return (
+            jsonify({"success": True, "message": "All data cleared successfully"}),
+            200,
+        )
+
     except SQLAlchemyError as e:
         db.session.rollback()
-        return jsonify({
-            "success": False,
-            "message": f"Database error: {e}"
-        }), 500
+        return jsonify({"success": False, "message": f"Database error: {e}"}), 500
+
+
+@client_bp.route("/client/<client_id>/complete", methods=["GET"])
+def get_complete_client_data(client_id):
+    """
+    Endpoint to get complete data for a specific client including all related records
+    """
+    # Get the client
+    client = db.session.execute(
+        db.select(Client).filter_by(client_id=client_id)
+    ).scalar_one_or_none()
+
+    if not client:
+        return jsonify({"success": False, "message": "Client not found"}), 404
+
+    # Get all meetings for this client
+    meetings = (
+        db.session.execute(db.select(Meeting).filter_by(client_id=client_id))
+        .scalars()
+        .all()
+    )
+
+    # Get all internet records for this client
+    internet_records = (
+        db.session.execute(db.select(Internet).filter_by(client_id=client_id))
+        .scalars()
+        .all()
+    )
+
+    # Get all buildings for this client with their offices
+    buildings = (
+        db.session.execute(db.select(Building).filter_by(client_id=client_id))
+        .scalars()
+        .all()
+    )
+
+    buildings_with_offices = []
+    for building in buildings:
+        offices = (
+            db.session.execute(
+                db.select(BuildingOffice).filter_by(building_id=building.building_id)
+            )
+            .scalars()
+            .all()
+        )
+
+        building_dict = building.to_dict()
+        building_dict["offices"] = [office.to_dict() for office in offices]
+        buildings_with_offices.append(building_dict)
+
+    # Combine all data
+    complete_data = {
+        "client": client.to_dict(),
+        "meetings": [meeting.to_dict() for meeting in meetings],
+        "internet_records": [internet.to_dict() for internet in internet_records],
+        "buildings": buildings_with_offices,
+        "summary": {
+            "total_meetings": len(meetings),
+            "total_buildings": len(buildings),
+            "total_internet_records": len(internet_records),
+            "total_offices": sum(
+                len(building.get("offices", [])) for building in buildings_with_offices
+            ),
+        },
+    }
+
+    return (
+        jsonify(
+            {
+                "success": True,
+                "message": f"Complete data retrieved for client {client.client_name}",
+                "data": complete_data,
+            }
+        ),
+        200,
+    )
