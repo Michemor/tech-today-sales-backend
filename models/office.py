@@ -14,6 +14,7 @@ class BuildingOffice(db.Model):
     industry_category = db.Column(db.String, nullable=False)
     more_data_on_office = db.Column(db.Text, nullable=False)
     building_id = db.Column(db.Integer, db.ForeignKey('building.building_id', ondelete="CASCADE"), nullable=False)
+    
 
     def __repr__(self):
         

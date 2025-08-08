@@ -116,6 +116,8 @@ def addSales():
         hasinternet=new_client,
     )
 
+    print("=======Building Details:\n {}\n ======Office Details:\n {}".format(new_building.to_dict(), new_office.to_dict()))
+
     try:
         db.session.add_all(
             [new_client, new_meeting, new_internet, new_building, new_office]
@@ -238,180 +240,102 @@ def get_offices():
     return jsonify({"success": True, "offices": office_list}), 200
 
 
-@client_bp.route("/client/<client_id>", methods=["PUT"])
-def updateClient(client_id):
+@client_bp.route("/update", methods=["POST"])
+def update_client_data():
+    """Updates the client data in the database.
+
+    Returns:
+        json: A JSON response indicating success or failure.
+    """
+
+    # updates data from client depending on the category sent from the frontend
     data = request.get_json()
+
+    print(f"Received data for update\n: {data}")
 
     if not data:
         return jsonify({"success": False, "message": "No data provided"}), 400
 
-    # Find the client first
-    client = db.session.execute(
-        db.select(Client).filter_by(client_id=client_id)
-    ).scalar_one_or_none()
+    category = data.get("category")
+    id = data.get("client_id")
+    value = data.get("value")
+    field = data.get("field")
+    context = data.get("clientData")
 
-    if not client:
-        return jsonify({"success": False, "message": "Client not found"}), 404
+    print("\n\n=============Context data sent frpm frontend:\n", context)
 
-    # Define allowed fields that can be updated
-    allowed_fields = [
-        "client_name",
-        "client_contact",
-        "client_email",
-        "job_title",
-        "deal_information",
-    ]
-
-    # Check if at least one valid field is provided
-    valid_fields = {key: value for key, value in data.items() if key in allowed_fields}
-
-    if not valid_fields:
-        return (
-            jsonify(
-                {"success": False, "message": "No valid fields provided for update"}
-            ),
-            400,
-        )
-
-    # Update only the provided valid fields
-    for key, value in valid_fields.items():
-        setattr(client, key, value)
+    # if not category or not id or not value or not field:
+    # return (
+    # jsonify({"success": False, "message": "Missing required fields"}),
+    # 400,
+    # )
 
     try:
+        if category == "client":
+            client = db.session.execute(
+                db.select(Client).filter_by(client_id=context["client"]["client_id"])
+            ).scalar_one_or_none()
+            if not client:
+                return jsonify({"success": False, "message": "Client not found"}), 404
+            setattr(client, field, value)
+
+        elif category == "meeting":
+            meeting = db.session.execute(
+                db.select(Meeting).filter_by(
+                    meeting_id=context["meeting"]["meeting_id"]
+                )
+            ).scalar_one_or_none()
+            if not meeting:
+                return jsonify({"success": False, "message": "Meeting not found"}), 404
+            setattr(meeting, field, value)
+
+        elif category == "internet":
+            internet = db.session.execute(
+                db.select(Internet).filter_by(
+                    internet_id=context["internet"]["internet_id"]
+                )
+            ).scalar_one_or_none()
+            if not internet:
+                return (
+                    jsonify({"success": False, "message": "Internet record not found"}),
+                    404,
+                )
+            setattr(internet, field, value)
+
+        elif category == "building":
+            building = db.session.execute(
+                db.select(Building).filter_by(
+                    building_id=context["building"]["building_id"]
+                )
+            ).scalar_one_or_none()
+            if not building:
+                return (
+                    jsonify({"success": False, "message": "Building record not found"}),
+                    404,
+                )
+            setattr(building, field, value)
+
+        elif category == "office":
+            office = db.session.execute(
+                db.select(BuildingOffice).filter_by(
+                    office_id=context["office"]["office_id"]
+                )
+            ).scalar_one_or_none()
+            if not office:
+                return (
+                    jsonify({"success": False, "message": "Office record not found"}),
+                    404,
+                )
+            setattr(office, field, value)
+
+        else:
+            return jsonify({"success": False, "message": "Invalid category"}), 400
+
         db.session.commit()
         return (
-            jsonify(
-                {
-                    "success": True,
-                    "message": "Client data updated successfully",
-                    "updatedClient": client.to_dict(),
-                }
-            ),
+            jsonify({"success": True, "message": f"{category} updated successfully"}),
             200,
         )
-    except SQLAlchemyError as e:
-        db.session.rollback()
-        return jsonify({"success": False, "message": f"Database error: {e}"}), 500
-
-
-@client_bp.route("/internet/<internet_id>", methods=["PUT"])
-def updateInternet(internet_id):
-    """
-    Endpoint to update internet information by ID
-    """
-    data = request.get_json()
-
-    if not data:
-        return jsonify({"success": False, "message": "No data provided"}), 400
-
-    internet = db.session.execute(
-        db.select(Internet).filter_by(internet_id=internet_id)
-    ).scalar_one_or_none()
-
-    if not internet:
-        return (
-            jsonify({"success": False, "message": "Internet information not found"}),
-            404,
-        )
-
-    # Update internet fields
-    for key, value in data.items():
-        setattr(internet, key, value)
-
-    try:
-        db.session.commit()
-        return (
-            jsonify(
-                {
-                    "success": True,
-                    "message": "Internet information updated successfully",
-                    "internet": internet.to_dict(),
-                }
-            ),
-            200,
-        )
-
-    except SQLAlchemyError as e:
-        db.session.rollback()
-        return jsonify({"success": False, "message": f"Database error: {e}"}), 500
-
-
-@client_bp.route("/office/<office_id>", methods=["PUT"])
-def updateOffice(office_id):
-    """
-    Endpoint to update office information by ID
-    """
-    data = request.get_json()
-
-    if not data:
-        return jsonify({"success": False, "message": "No data provided"}), 400
-
-    office = db.session.execute(
-        db.select(BuildingOffice).filter_by(office_id=office_id)
-    ).scalar_one_or_none()
-
-    if not office:
-        return (
-            jsonify({"success": False, "message": "Office information not found"}),
-            404,
-        )
-
-    # Update office fields
-    for key, value in data.items():
-        setattr(office, key, value)
-
-    try:
-        db.session.commit()
-        return (
-            jsonify(
-                {
-                    "success": True,
-                    "message": "Office information updated successfully",
-                    "office": office.to_dict(),
-                }
-            ),
-            200,
-        )
-
-    except SQLAlchemyError as e:
-        db.session.rollback()
-        return jsonify({"success": False, "message": f"Database error: {e}"}), 500
-
-
-@client_bp.route("/meeting/<meeting_id>", methods=["PUT"])
-def updateMeeting(meeting_id):
-    """
-    Endpoint to update meeting information by ID
-    """
-    data = request.get_json()
-
-    if not data:
-        return jsonify({"success": False, "message": "No data provided"}), 400
-
-    meeting = db.session.execute(
-        db.select(Meeting).filter_by(meeting_id=meeting_id)
-    ).scalar_one_or_none()
-
-    if not meeting:
-        return jsonify({"success": False, "message": "Meeting not found"}), 404
-
-    # Update meeting fields
-    for key, value in data.items():
-        setattr(meeting, key, value)
-
-    try:
-        db.session.commit()
-        return (
-            jsonify(
-                {
-                    "success": True,
-                    "message": "Meeting information updated successfully",
-                    "meeting": meeting.to_dict(),
-                }
-            ),
-            200,
-        )
-
     except SQLAlchemyError as e:
         db.session.rollback()
         return jsonify({"success": False, "message": f"Database error: {e}"}), 500
@@ -604,17 +528,25 @@ def get_sales():
         )
 
         # Get all buildings for this client
-        buildings = db.session.execute( db.select(Building).filter_by(client_id=client.client_id)).scalars().all()
+        buildings = (
+            db.session.execute(
+                db.select(Building).filter_by(client_id=client.client_id)
+            )
+            .scalars()
+            .all()
+        )
 
         # Get all offices for all buildings of this client
         for building in buildings:
             offices = (
                 db.session.execute(
-                    db.select(BuildingOffice).filter_by(building_id=building.building_id)
+                    db.select(BuildingOffice).filter_by(
+                        building_id=building.building_id
+                    )
                 )
                 .scalars()
                 .all()
-        )
+            )
 
         # Combine all data for this client
         client_data = {
@@ -644,7 +576,6 @@ def get_sales():
     )
 
 
-
 @client_bp.route("/sales/<int:user_id>", methods=["GET"])
 def get_client_data(user_id):
     """
@@ -657,21 +588,23 @@ def get_client_data(user_id):
     user = db.session.get(Client, user_id)
 
     if not user:
-        return jsonify({
-            "success": False, 
-            "message": "User not found"
-        }), 404
+        return jsonify({"success": False, "message": "User not found"}), 404
     # Get all meetings for this user
-    user_meeting = (
-        db.session.execute(db.select(Meeting).filter_by(client_id=user_id))
-        .scalar_one_or_none()
-    )
+    user_meeting = db.session.execute(
+        db.select(Meeting).filter_by(client_id=user_id)
+    ).scalar_one_or_none()
     # Get all internet records for this user
-    user_internet = db.session.execute(db.select(Internet).filter_by(client_id=user_id)).scalar_one_or_none()
+    user_internet = db.session.execute(
+        db.select(Internet).filter_by(client_id=user_id)
+    ).scalar_one_or_none()
     # Get all buildings for this user
-    user_building = db.session.execute(db.select(Building).filter_by(client_id=user_id)).scalar_one_or_none()
+    user_building = db.session.execute(
+        db.select(Building).filter_by(client_id=user_id)
+    ).scalar_one_or_none()
     # Get all offices for all buildings of this user
-    user_office = db.session.execute(db.Select(BuildingOffice).filter_by(building_id=user_building.building_id)).scalar_one_or_none()
+    user_office = db.session.execute(
+        db.Select(BuildingOffice).filter_by(building_id=user_building.building_id)
+    ).scalar_one_or_none()
     # Combine all data for this client
     client_data = {
         "client": user.to_dict(),
@@ -692,7 +625,7 @@ def get_client_data(user_id):
         200,
     )
 
-   
+
 @client_bp.route("/clear-all-data", methods=["DELETE"])
 def clear_all_data():
     """
@@ -813,3 +746,58 @@ def get_complete_client_data(client_id):
         ),
         200,
     )
+
+
+@client_bp.route("/count", methods=["GET"])
+def get_client_count():
+    """
+    Endpoint to get the count of all clients
+    """
+    try:
+        client_count = db.session.execute(
+            db.select(func.count(Client.client_id))
+        ).scalar()
+        return jsonify({"success": True, "data": {"client_count": client_count}}), 200
+    except SQLAlchemyError as e:
+        return jsonify({"success": False, "message": f"Database error: {e}"}), 500
+
+
+@client_bp.route("/building_names", methods=["GET"])
+def get_building_name():
+    """ Fetches the building name from the database
+    """
+    names = []
+    buildings = (
+        db.session.execute(db.select(Building).order_by(Building.building_id))
+        .scalars()
+        .all()
+    )
+    for building in buildings:
+        names.append(building.building_name)
+
+    print(f"Building names fetched: {names}")
+    
+    return jsonify({
+        "success": True,
+        "building_names": names
+    }), 200
+
+@client_bp.route("/office_names", methods=["GET"])
+def get_office_name():
+    """ Fetches the office name from the database
+    """
+    names = []
+    offices = (
+        db.session.execute(db.select(BuildingOffice).order_by(BuildingOffice.office_id))
+        .scalars()
+        .all()
+    )
+    for office in offices:
+        names.append(office.office_name)
+
+    print(f"Office names fetched: {names}")
+    
+    return jsonify({
+        "success": True,
+        "office_names": names
+    }), 200 
