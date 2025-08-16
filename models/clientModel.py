@@ -19,17 +19,17 @@ class Client(db.Model):
     __tablename__ = "client"
 
     client_id = db.Column(db.Integer, primary_key=True)
-    client_name = db.Column(db.String, unique=True, nullable=False)
-    client_contact = db.Column(db.String, unique=True, nullable=False)
-    client_email = db.Column(db.String, unique=True, nullable=False)
-    job_title = db.Column(db.String, unique=True, nullable=False)
-    deal_information = db.Column(db.Text, unique=True, nullable=False)
+    client_name = db.Column(db.String, nullable=False)
+    client_contact = db.Column(db.String, nullable=False)
+    client_email = db.Column(db.String, nullable=False)
+    job_title = db.Column(db.String, nullable=False)
+    deal_information = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=func.now())
+    building_id = db.Column(db.Integer, db.ForeignKey('building.building_id', ondelete="CASCADE"), nullable=False)
+    office_id = db.Column(db.Integer, db.ForeignKey('buildingoffice.office_id', ondelete="CASCADE"), nullable=False)
 
     meetings = db.relationship('Meeting', backref='attends', cascade="all, delete-orphan", passive_deletes=True)
     internet = db.relationship('Internet', backref='hasinternet', cascade="all, delete-orphan", passive_deletes=True)
-    buildings = db.relationship('Building', backref='owns', cascade="all, delete-orphan", passive_deletes=True)
-
 
     def __repr__(self):
         return f'Client {self.client_name} {self.timestamp}'
@@ -42,6 +42,7 @@ class Client(db.Model):
             'client_email': self.client_email,
             'job_title': self.job_title,
             'deal_information': self.deal_information,
-            'timestamp': self.timestamp.isoformat()
+            'timestamp': self.timestamp.isoformat(),
+            'building_id': self.building_id
         }
     

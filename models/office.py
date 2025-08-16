@@ -13,8 +13,9 @@ class BuildingOffice(db.Model):
     staff_number = db.Column(db.Integer, nullable=False)
     industry_category = db.Column(db.String, nullable=False)
     more_data_on_office = db.Column(db.Text, nullable=False)
-    building_id = db.Column(db.Integer, db.ForeignKey('building.building_id', ondelete="CASCADE"), nullable=False)
+    building_id = db.Column(db.Integer, db.ForeignKey('building.building_id', ondelete="CASCADE"))
     
+    clients = db.relationship('Client', backref='office', cascade="all, delete-orphan", passive_deletes=True)
 
     def __repr__(self):
         

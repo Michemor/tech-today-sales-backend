@@ -8,6 +8,7 @@ from models.meetingModel import Meeting
 from models.office import BuildingOffice
 from models.buildingModel import Building
 from sqlalchemy.exc import IntegrityError, DataError, SQLAlchemyError
+from sqlalchemy import func
 
 """
 This file contains routes for entering client data 
@@ -49,81 +50,81 @@ def addSales():
     if not data:
         return (jsonify({"success": False, "message": "No data provided"}), 400)
 
-    # client information fetched from frontend
-    client_name = data.get("client_name")
-    client_contact = data.get("contact")
-    client_email = data.get("client_email")
-    job_title = data.get("job")
-    deal_information = data.get("deal_info")
-
-    # meeting information fetched from frontend
-    date = data.get("meetingDate")
-    location = data.get("meetingLocation")
-    type_of_meeting = data.get("meetingType")
-    remarks = data.get("meetingRemarks")
-    status = data.get("meetingStatus")
-
-    # internet information
-    isp_connected = data.get("is_connected")
-    isp_name = data.get("isp_name")
-    net_connection_type = data.get("connection_type")
-    product = data.get("product")
-    net_price = data.get("net_price")
-    deal_status = data.get("deal_status")
-
-    new_client = Client(
-        client_name=client_name,
-        client_contact=client_contact,
-        client_email=client_email,
-        job_title=job_title,
-        deal_information=deal_information,
-    )
-
-    new_building = Building(
-        building_name=data.get("building_name"),
-        is_fibre_setup=data.get("is_fibre_setup"),
-        ease_of_access=data.get("ease_of_access"),
-        access_information=data.get("more_info_access"),
-        number_offices=data.get("number_offices"),
-        owns=new_client,
-    )
-
-    new_office = BuildingOffice(
-        office_name=data.get("office_name"),
-        office_floor=data.get("office_floor"),
-        staff_number=data.get("number_staff"),
-        industry_category=data.get("industry"),
-        more_data_on_office=data.get("more_offices"),
-        located=new_building,
-    )
-
-    new_meeting = Meeting(
-        meeting_date=date,
-        meeting_location=location,
-        meetingtype=type_of_meeting,
-        meeting_remarks=remarks,
-        meeting_status=status,
-        attends=new_client,
-    )
-
-    new_internet = Internet(
-        is_isp_connected=isp_connected,
-        isp_name=isp_name,
-        internet_connection_type=net_connection_type,
-        service_provided=product,
-        isp_price=net_price,
-        deal_status=deal_status,
-        hasinternet=new_client,
-    )
-
-    print("=======Building Details:\n {}\n ======Office Details:\n {}".format(new_building.to_dict(), new_office.to_dict()))
-
     try:
-        db.session.add_all(
-            [new_client, new_meeting, new_internet, new_building, new_office]
-        )
-        db.session.commit()
+        building_name = data.get("building_name")
+        building = db.session.execute(
+            db.select(Building).filter_by(building_name=building_name)
+        ).scalar_one_or_none()
 
+        if not building:
+            building = Building(
+                building_name=data.get("building_name"),
+                is_fibre_setup=data.get("is_fibre_setup"),
+                ease_of_access=data.get("ease_of_access"),
+                access_information=data.get("more_info_access"),
+                number_offices=data.get("number_offices"),
+            )
+        db.session.add(building)
+        db.session.flush()
+
+        office_name = data.get("office_name")
+        office_exists = db.session.execute(
+            db.select(BuildingOffice).filter_by(office_name=office_name)
+        ).scalar_one_or_none()
+
+        if not office_exists:
+            office_exists = BuildingOffice(
+                office_name=office_name,
+                office_floor=data.get("office_floor"),
+                staff_number=data.get("number_staff"),
+                industry_category=data.get("industry"),
+                more_data_on_office=data.get("more_offices"),
+                located=building,
+            )
+
+        db.session.add(office_exists)
+        # client information fetched from frontend
+        client = Client(
+            client_name=data.get("client_name"),
+            client_contact=data.get("contact"),
+            client_email=data.get("client_email"),
+            job_title=data.get("job"),
+            deal_information=data.get("deal_info"),
+            office=office_exists,
+            building=building
+        )
+        db.session.add(client)
+
+        # meeting information fetched from frontend
+        meeting = Meeting(
+            meeting_date=data.get("meetingDate"),
+            meeting_location=data.get("meetingLocation"),
+            meetingtype=data.get("meetingType"),
+            meeting_remarks=data.get("meetingRemarks"),
+            meeting_status=data.get("meetingStatus"),
+            attends=client
+        )
+        db.session.add(meeting)
+
+        # internet information
+        internet = Internet(
+            is_isp_connected=data.get("is_connected"),
+            isp_name=data.get("isp_name"),
+            internet_connection_type=data.get("connection_type"),
+            service_provided=data.get("product"),
+            isp_price=data.get("net_price"),
+            deal_status=data.get("deal_status"),
+            hasinternet=client
+        )
+        db.session.add(internet)
+
+        print(
+            "=======Building Details:\n {}\n ======Office Details:\n {}".format(
+                building.to_dict(), office_exists.to_dict()
+            )
+        )
+
+        db.session.commit()
         return (
             jsonify(
                 {"success": True, "message": "Client information added successfully"}
@@ -207,22 +208,18 @@ def get_clients():
 
 
 @client_bp.route("/internet", methods=["GET"])
-def get_internet_status():
+def get_internet():
     """
     Endpoint to get all internet statuses
     """
 
-    internetDict = []
-    internet_statuses = (
-        db.session.execute(db.select(Internet).order_by(Internet.internet_id))
-        .scalars()
-        .all()
-    )
+    internet = (db.session.execute(db.select(Internet).order_by(Internet.internet_id))
+                .scalars()
+                .all())
 
-    for internet in internet_statuses:
-        internetDict.append(internet.to_dict())
+    internet_list = [i.to_dict() for i in internet]
 
-    return jsonify({"success": True, "internet": internetDict}), 200
+    return jsonify({"success": True, "internet": internet_list}), 200
 
 
 @client_bp.route("/offices", methods=["GET"])
@@ -530,23 +527,16 @@ def get_sales():
         # Get all buildings for this client
         buildings = (
             db.session.execute(
-                db.select(Building).filter_by(client_id=client.client_id)
-            )
-            .scalars()
-            .all()
+                db.select(Building).filter_by(building_id=client.building_id)
+            ).scalars().all()
         )
 
         # Get all offices for all buildings of this client
-        for building in buildings:
-            offices = (
-                db.session.execute(
-                    db.select(BuildingOffice).filter_by(
-                        building_id=building.building_id
-                    )
-                )
-                .scalars()
-                .all()
-            )
+        offices  = (
+            db.session.execute(
+                db.select(BuildingOffice).filter_by(office_id=client.office_id)
+            ).scalars().all()
+        )
 
         # Combine all data for this client
         client_data = {
@@ -556,9 +546,7 @@ def get_sales():
             "buildings": [building.to_dict() for building in buildings],
             "offices": [office.to_dict() for office in offices],
             "total_meetings": len(meetings),
-            "total_buildings": len(buildings),
             "total_internet_records": len(internet_records),
-            "total_offices": len(offices),
         }
 
         sales_data.append(client_data)
@@ -587,6 +575,8 @@ def get_client_data(user_id):
     # If user_id is provided, return data for specific user
     user = db.session.get(Client, user_id)
 
+    print("---User data: ", user)
+
     if not user:
         return jsonify({"success": False, "message": "User not found"}), 404
     # Get all meetings for this user
@@ -597,21 +587,23 @@ def get_client_data(user_id):
     user_internet = db.session.execute(
         db.select(Internet).filter_by(client_id=user_id)
     ).scalar_one_or_none()
+
+    user_building_id = user.building_id
     # Get all buildings for this user
     user_building = db.session.execute(
-        db.select(Building).filter_by(client_id=user_id)
+        db.select(Building).filter_by(building_id=user_building_id)
     ).scalar_one_or_none()
     # Get all offices for all buildings of this user
     user_office = db.session.execute(
-        db.Select(BuildingOffice).filter_by(building_id=user_building.building_id)
+        db.select(BuildingOffice).filter_by(office_id=user.office_id)
     ).scalar_one_or_none()
     # Combine all data for this client
     client_data = {
         "client": user.to_dict(),
-        "meeting": user_meeting.to_dict(),
-        "internet": user_internet.to_dict(),
-        "building": user_building.to_dict(),
-        "office": user_office.to_dict(),
+        "meeting": user_meeting.to_dict() if user_meeting else None,
+        "internet": user_internet.to_dict() if user_internet else None,
+        "building": user_building.to_dict() if user_building else None,
+        "office": user_office.to_dict() if user_office else None,
     }
     print(f"======={user.client_name} data retrieved successfully\n {client_data}")
     return (
@@ -749,7 +741,7 @@ def get_complete_client_data(client_id):
 
 
 @client_bp.route("/count", methods=["GET"])
-def get_client_count():
+def count_sales():
     """
     Endpoint to get the count of all clients
     """
@@ -757,15 +749,57 @@ def get_client_count():
         client_count = db.session.execute(
             db.select(func.count(Client.client_id))
         ).scalar()
-        return jsonify({"success": True, "data": {"client_count": client_count}}), 200
+
+        meeting_count = db.session.execute(
+            db.select(
+                func.count(Meeting.meeting_id).filter(
+                    Meeting.meeting_status == "Scheduled"
+                )
+            )
+        ).scalar()
+
+        deal_status_count = db.session.execute(
+            db.select(
+                func.count(Internet.internet_id).filter(
+                    Internet.deal_status == "Pending"
+                )
+            )
+        ).scalar()
+
+        if client_count is None:
+            client_count = 0
+
+        if meeting_count is None:
+            meeting_count = 0
+
+        if deal_status_count is None:
+            deal_status_count = 0
+        # Log the counts for debugging
+        print(
+            f"Client count: {client_count}, \
+              Meeting count: {meeting_count}, \
+                Deal status count: {deal_status_count}"
+        )
+        return (
+            jsonify(
+                {
+                    "success": True,
+                    "data": {
+                        "client_count": client_count,
+                        "meeting_count": meeting_count,
+                        "deal_status": deal_status_count,
+                    },
+                }
+            ),
+            200,
+        )
     except SQLAlchemyError as e:
         return jsonify({"success": False, "message": f"Database error: {e}"}), 500
 
 
 @client_bp.route("/building_names", methods=["GET"])
 def get_building_name():
-    """ Fetches the building name from the database
-    """
+    """Fetches the building name from the database"""
     names = []
     buildings = (
         db.session.execute(db.select(Building).order_by(Building.building_id))
@@ -776,16 +810,13 @@ def get_building_name():
         names.append(building.building_name)
 
     print(f"Building names fetched: {names}")
-    
-    return jsonify({
-        "success": True,
-        "building_names": names
-    }), 200
+
+    return jsonify({"success": True, "building_names": names}), 200
+
 
 @client_bp.route("/office_names", methods=["GET"])
 def get_office_name():
-    """ Fetches the office name from the database
-    """
+    """Fetches the office name from the database"""
     names = []
     offices = (
         db.session.execute(db.select(BuildingOffice).order_by(BuildingOffice.office_id))
@@ -796,8 +827,5 @@ def get_office_name():
         names.append(office.office_name)
 
     print(f"Office names fetched: {names}")
-    
-    return jsonify({
-        "success": True,
-        "office_names": names
-    }), 200 
+
+    return jsonify({"success": True, "office_names": names}), 200
